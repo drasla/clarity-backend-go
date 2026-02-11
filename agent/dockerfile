@@ -5,12 +5,12 @@ WORKDIR /app
 COPY generated/go.mod generated/go.sum ./generated/
 COPY agent/go.mod agent/go.sum ./agent/
 
-WORKDIR /app/agent
-RUN go mod download
-
 WORKDIR /app
 COPY generated ./generated
 COPY agent ./agent
+
+WORKDIR /app/agent
+RUN go mod download
 
 WORKDIR /app/agent
 RUN CGO_ENABLED=0 GOOS=linux go build -o clarity-agent .

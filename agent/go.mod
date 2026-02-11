@@ -5,6 +5,7 @@ go 1.26.0
 require google.golang.org/grpc v1.78.0
 
 require (
+	clarity/generated v0.0.0
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
