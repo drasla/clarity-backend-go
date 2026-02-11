@@ -1,1 +1,0 @@
-module clarity-backend-go

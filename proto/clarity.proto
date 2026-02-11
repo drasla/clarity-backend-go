@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package clarity;
+
+option go_package = "clarity/generated/proto;pb";
+
+service AgentService {
+  rpc Ping (Empty) returns (PingResponse);
+  rpc CreateHosting (CreateHostingRequest) returns (CommonResponse);
+  rpc DeleteHosting (HostingIdRequest) returns (CommonResponse);
+  rpc SuspendHosting (HostingIdRequest) returns (CommonResponse);
+  rpc UnSuspendHosting (HostingIdRequest) returns (CommonResponse);
+  rpc UpdateHosting (UpdateHostingRequest) returns (CommonResponse);
+  rpc GetHostingStatus (HostingIdRequest) returns (HostingStatusResponse);
+}
+
+message Empty {}
+
+message PingResponse {
+  string message = 1;
+  string version = 2;
+}
+
+message CommonResponse {
+  bool result = 1;
+  string message = 2;
+}
+
+message HostingIdRequest {
+  string ftp_id = 1;
+}
+
+message CreateHostingRequest {
+  string ftp_id = 1;
+  string ftp_pw = 2;
+  string db_name = 3;
+  string db_id = 4;
+  string db_pw = 5;
+  string domain = 6;
+  int64 storage_quota_mb = 7;
+  int64 traffic_quota_mb = 8;
+}
+
+message UpdateHostingRequest {
+  string ftp_id = 1;
+
+  optional string ftp_pw = 2;
+  optional string db_pw = 3;
+  optional int64 storage_quota_mb = 4;
+  optional int64 traffic_quota_mb = 5;
+}
+
+message HostingStatusResponse {
+  string ftp_id = 1;
+  int64 storage_used_mb = 2;
+  int64 db_used_mb = 3;
+  int64 traffic_used_mb = 4;
+  bool is_suspended = 5;
+}
