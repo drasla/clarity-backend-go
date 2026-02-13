@@ -8,17 +8,16 @@ package graph
 import (
 	"context"
 	"fmt"
-	"tower/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// Empty is the resolver for the _empty field.
+func (r *mutationResolver) Empty(ctx context.Context) (*string, error) {
+	panic(fmt.Errorf("not implemented: Empty - _empty"))
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// Empty is the resolver for the _empty field.
+func (r *queryResolver) Empty(ctx context.Context) (*string, error) {
+	panic(fmt.Errorf("not implemented: Empty - _empty"))
 }
 
 // Mutation returns MutationResolver implementation.

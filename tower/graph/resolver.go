@@ -1,9 +1,8 @@
 package graph
 
-import (
-	"tower/pkg/database"
-)
+import service "tower/services"
 
 type Resolver struct {
-	DB *database.Container
+	AuthService         service.AuthService
+	VerificationService service.VerificationService
 }

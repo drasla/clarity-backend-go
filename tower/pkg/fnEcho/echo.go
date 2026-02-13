@@ -1,12 +1,14 @@
-package server
+package fnEcho
 
 import (
 	"errors"
 	"log"
 	"net/http"
 	"tower/pkg/database"
-	"tower/pkg/env"
+	"tower/pkg/fnEnv"
 	"tower/pkg/handler"
+	"tower/repository"
+	service "tower/services"
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v5"
@@ -15,7 +17,7 @@ import (
 
 func StartEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *echo.Echo {
 	e := createEchoServer(db, errHandler)
-	port := env.GetString("PORT", "8080")
+	port := fnEnv.GetString("PORT", "8080")
 	go func() {
 		log.Printf("🚀 Starting Echo Server on :%s", port)
 		if err := e.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -62,7 +64,14 @@ func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) 
 		AllowMethods: []string{"GET", "POST", "OPTIONS"},
 	}))
 
-	graphqlHandler := NewGraphQLServer(db, errHandler)
+	userRepo := repository.NewUserRepository(db.MainDB)
+	sessionRepo := repository.NewSessionRepository(db.MainDB)
+	verificationRepo := repository.NewVerificationRepository(db.MainDB)
+
+	verificationService := service.NewVerificationService(verificationRepo)
+	authService := service.NewAuthService(userRepo, sessionRepo, verificationService)
+
+	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService)
 
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/query")))
 	e.POST("/query", echo.WrapHandler(graphqlHandler))

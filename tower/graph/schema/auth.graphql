@@ -1,0 +1,63 @@
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    name: String!
+    phoneNumber: String!
+    landlineNumber: String
+    role: String!
+    type: String!
+    bizInfo: BusinessInfo
+}
+
+type BusinessInfo {
+    bizRegNumber: String!
+    bizCEO: String!
+    bizType: String!
+    bizItem: String!
+    bizZipCode: String!
+    bizAddress1: String!
+    bizAddress2: String
+    bizLicenseURL: String
+}
+
+type Token {
+    accessToken: String!
+    refreshToken: String!
+}
+
+input RegisterInput {
+    username: String!
+    password: String!
+    name: String!
+    email: String!
+    phoneNumber: String!
+    landlineNumber: String
+    agreeEmail: Boolean!
+    agreeSMS: Boolean!
+    bizInfo: BusinessInput
+}
+
+input BusinessInput {
+    bizRegNumber: String!
+    bizCEO: String!
+    bizType: String!
+    bizItem: String!
+    bizZipCode: String!
+    bizAddress1: String!
+    bizAddress2: String
+    bizLicenseURL: String
+}
+
+extend type Mutation {
+    requestVerification(target: String!, type: VerificationType!): Boolean!
+    confirmVerification(target: String!, type: VerificationType!, code: String!): Boolean!
+    register(input: RegisterInput!): User!
+    login(email: String!, password: String!): Token!
+    refreshToken(token: String!): Token!
+    withdraw: Boolean!
+}
+
+extend type Query {
+    me: User
+}

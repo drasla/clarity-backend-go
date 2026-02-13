@@ -19,6 +19,19 @@ tasks:
       - cd generated && go mod tidy
       - git add generated
 
+  gqlgen:
+    desc: GraphQL 코드 생성
+    dir: tower
+    cmds:
+      - go run github.com/99designs/gqlgen generate
+      - git add graph
+    sources:
+      - graph/*.graphql
+      - gqlgen.yml
+    generates:
+      - graph/generated.go
+      - graph/model/models_gen.go
+
   tidy:
     desc: Go 모듈 의존성 정리
     cmds:

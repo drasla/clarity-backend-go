@@ -1,6 +1,9 @@
 package database
 
-import "log"
+import (
+	"log"
+	"tower/model/maindb"
+)
 
 func MustInit() *Container {
 	cfg, err := LoadConfigFromEnv()
@@ -11,6 +14,15 @@ func MustInit() *Container {
 	container, err := NewContainer(cfg)
 	if err != nil {
 		log.Fatalf("❌ Failed to connect to databases: %v", err)
+	}
+
+	err = container.MainDB.AutoMigrate(
+		&maindb.User{},
+		&maindb.RefreshToken{},
+		&maindb.Verification{},
+	)
+	if err != nil {
+		log.Fatalf("❌ Migration Failed: %v", err)
 	}
 
 	return container

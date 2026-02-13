@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"tower/pkg/env"
+	"tower/pkg/fnEnv"
 )
 
 type ConnectionInfo struct {
@@ -25,20 +25,20 @@ type Config struct {
 
 func LoadConfigFromEnv() (*Config, error) {
 	mainConfig := ConnectionInfo{
-		Host:     env.GetString("MYSQL84_HOST", "127.0.0.1"),
-		Port:     env.GetString("MYSQL84_PORT", "8054"),
-		User:     env.GetString("MYSQL84_USERNAME", "root"),
-		Password: env.GetString("MYSQL84_PASSWORD", ""),
-		DBName:   env.GetString("MYSQL84_DATABASE", ""),
+		Host:     fnEnv.GetString("MYSQL84_HOST", "127.0.0.1"),
+		Port:     fnEnv.GetString("MYSQL84_PORT", "8054"),
+		User:     fnEnv.GetString("MYSQL84_USERNAME", "root"),
+		Password: fnEnv.GetString("MYSQL84_PASSWORD", ""),
+		DBName:   fnEnv.GetString("MYSQL84_DATABASE", ""),
 		Charset:  "utf8mb4",
 	}
 
 	smsConfig := ConnectionInfo{
-		Host:     env.GetString("MYSQL51_HOST", "127.0.0.1"),
-		Port:     env.GetString("MYSQL51_PORT", "8051"),
-		User:     env.GetString("MYSQL51_USERNAME", "root"),
-		Password: env.GetString("MYSQL51_PASSWORD", ""),
-		DBName:   env.GetString("MYSQL51_DATABASE", ""),
+		Host:     fnEnv.GetString("MYSQL51_HOST", "127.0.0.1"),
+		Port:     fnEnv.GetString("MYSQL51_PORT", "8051"),
+		User:     fnEnv.GetString("MYSQL51_USERNAME", "root"),
+		Password: fnEnv.GetString("MYSQL51_PASSWORD", ""),
+		DBName:   fnEnv.GetString("MYSQL51_DATABASE", ""),
 		Charset:  "utf8",
 	}
 

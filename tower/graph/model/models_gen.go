@@ -2,25 +2,121 @@
 
 package model
 
-type Mutation struct {
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type BusinessInfo struct {
+	BizRegNumber  string  `json:"bizRegNumber"`
+	BizCeo        string  `json:"bizCEO"`
+	BizType       string  `json:"bizType"`
+	BizItem       string  `json:"bizItem"`
+	BizZipCode    string  `json:"bizZipCode"`
+	BizAddress1   string  `json:"bizAddress1"`
+	BizAddress2   *string `json:"bizAddress2,omitempty"`
+	BizLicenseURL *string `json:"bizLicenseURL,omitempty"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type BusinessInput struct {
+	BizRegNumber  string  `json:"bizRegNumber"`
+	BizCeo        string  `json:"bizCEO"`
+	BizType       string  `json:"bizType"`
+	BizItem       string  `json:"bizItem"`
+	BizZipCode    string  `json:"bizZipCode"`
+	BizAddress1   string  `json:"bizAddress1"`
+	BizAddress2   *string `json:"bizAddress2,omitempty"`
+	BizLicenseURL *string `json:"bizLicenseURL,omitempty"`
+}
+
+type Mutation struct {
 }
 
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type RegisterInput struct {
+	Username       string         `json:"username"`
+	Password       string         `json:"password"`
+	Name           string         `json:"name"`
+	Email          string         `json:"email"`
+	PhoneNumber    string         `json:"phoneNumber"`
+	LandlineNumber *string        `json:"landlineNumber,omitempty"`
+	AgreeEmail     bool           `json:"agreeEmail"`
+	AgreeSms       bool           `json:"agreeSMS"`
+	BizInfo        *BusinessInput `json:"bizInfo,omitempty"`
+}
+
+type Token struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID             string        `json:"id"`
+	Username       string        `json:"username"`
+	Email          string        `json:"email"`
+	Name           string        `json:"name"`
+	PhoneNumber    string        `json:"phoneNumber"`
+	LandlineNumber *string       `json:"landlineNumber,omitempty"`
+	Role           string        `json:"role"`
+	Type           string        `json:"type"`
+	BizInfo        *BusinessInfo `json:"bizInfo,omitempty"`
+}
+
+type VerificationType string
+
+const (
+	VerificationTypeEmail VerificationType = "EMAIL"
+	VerificationTypeSms   VerificationType = "SMS"
+)
+
+var AllVerificationType = []VerificationType{
+	VerificationTypeEmail,
+	VerificationTypeSms,
+}
+
+func (e VerificationType) IsValid() bool {
+	switch e {
+	case VerificationTypeEmail, VerificationTypeSms:
+		return true
+	}
+	return false
+}
+
+func (e VerificationType) String() string {
+	return string(e)
+}
+
+func (e *VerificationType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = VerificationType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid VerificationType", str)
+	}
+	return nil
+}
+
+func (e VerificationType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *VerificationType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e VerificationType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

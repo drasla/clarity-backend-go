@@ -1,8 +1,8 @@
-package server
+package fnEcho
 
 import (
 	"tower/graph"
-	"tower/pkg/database"
+	service "tower/services"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -16,9 +16,14 @@ import (
 	localHandler "tower/pkg/handler"
 )
 
-func NewGraphQLServer(db *database.Container, errHandler *localHandler.ErrorHandler) *handler.Server {
+func NewGraphQLServer(
+	errHandler *localHandler.ErrorHandler,
+	authService service.AuthService,
+	verService service.VerificationService,
+) *handler.Server {
 	resolver := &graph.Resolver{
-		DB: db,
+		AuthService:         authService,
+		VerificationService: verService,
 	}
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{

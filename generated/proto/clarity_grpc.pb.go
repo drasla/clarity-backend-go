@@ -119,7 +119,7 @@ func (c *agentServiceClient) GetHostingStatus(ctx context.Context, in *HostingId
 	return out, nil
 }
 
-// AgentServiceServer is the server API for AgentService service.
+// AgentServiceServer is the fnEcho API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility.
 type AgentServiceServer interface {
