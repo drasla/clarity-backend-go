@@ -1,12 +1,35 @@
+scalar Time
+
+enum UserRole {
+    USER
+    ADMIN
+}
+
+enum UserType {
+    PERSONAL
+    BUSINESS
+}
+
+enum UserStatus {
+    ACTIVE
+    SUSPENDED
+    WITHDRAWN
+}
+
 type User {
     id: ID!
+    createdAt: Time!
+    updatedAt: Time!
     username: String!
     email: String!
     name: String!
     phoneNumber: String!
     landlineNumber: String
-    role: String!
-    type: String!
+    role: UserRole!
+    type: UserType!
+    status: UserStatus!
+    agreeEmail: Boolean!
+    agreeSMS: Boolean!
     bizInfo: BusinessInfo
 }
 

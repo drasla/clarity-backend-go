@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"tower/pkg/database"
 	"tower/pkg/fnEnv"
+	"tower/pkg/fnMiddleware"
 	"tower/pkg/handler"
 	"tower/repository"
 	service "tower/services"
@@ -15,17 +16,22 @@ import (
 	"github.com/labstack/echo/v5/middleware"
 )
 
-func StartEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *echo.Echo {
+func StartEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *http.Server {
 	e := createEchoServer(db, errHandler)
 	port := fnEnv.GetString("PORT", "8080")
+	addr := ":" + port
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: e,
+	}
 	go func() {
 		log.Printf("🚀 Starting Echo Server on :%s", port)
-		if err := e.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("Echo Server Error: %v", err)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("❌ HTTP Server Error: %v", err)
 		}
 	}()
 
-	return e
+	return srv
 }
 
 func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *echo.Echo {
@@ -64,17 +70,20 @@ func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) 
 		AllowMethods: []string{"GET", "POST", "OPTIONS"},
 	}))
 
+	e.Use(fnMiddleware.JwtMiddleware())
+
 	userRepo := repository.NewUserRepository(db.MainDB)
 	sessionRepo := repository.NewSessionRepository(db.MainDB)
 	verificationRepo := repository.NewVerificationRepository(db.MainDB)
 
 	verificationService := service.NewVerificationService(verificationRepo)
 	authService := service.NewAuthService(userRepo, sessionRepo, verificationService)
+	userService := service.NewUserService(userRepo)
 
-	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService)
+	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService)
 
-	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/query")))
-	e.POST("/query", echo.WrapHandler(graphqlHandler))
+	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/graphql")))
+	e.POST("/graphql", echo.WrapHandler(graphqlHandler))
 	e.GET("/health", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "Tower is Healthy! (Echo v5)")
 	})

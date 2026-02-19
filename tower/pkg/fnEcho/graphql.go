@@ -20,10 +20,12 @@ func NewGraphQLServer(
 	errHandler *localHandler.ErrorHandler,
 	authService service.AuthService,
 	verService service.VerificationService,
+	userService service.UserService,
 ) *handler.Server {
 	resolver := &graph.Resolver{
 		AuthService:         authService,
 		VerificationService: verService,
+		UserService:         userService,
 	}
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{

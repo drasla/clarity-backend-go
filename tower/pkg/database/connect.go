@@ -24,7 +24,10 @@ func NewContainer(cfg *Config) (*Container, error) {
 
 	smsDB, err := connectSmsDB(cfg.Sms.DSN())
 	if err != nil {
-		closeMainDB(mainDB)
+		if closeErr := closeMainDB(mainDB); closeErr != nil {
+			log.Printf("⚠️ Failed to close MainDB during rollback: %v", closeErr)
+		}
+
 		return nil, fmt.Errorf("failed to connect to sms db: %w", err)
 	}
 
@@ -77,24 +80,32 @@ func connectSmsDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func (c *Container) Close() {
+func closeMainDB(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get sqlDB from gorm: %w", err)
+	}
+	return sqlDB.Close()
+}
+
+func (c *Container) Close() error {
+	var errs []error
+
 	if c.MainDB != nil {
-		closeMainDB(c.MainDB)
+		if err := closeMainDB(c.MainDB); err != nil {
+			log.Printf("⚠️ Error closing MainDB: %v", err)
+			errs = append(errs, err)
+		}
 	}
 	if c.SmsDB != nil {
 		if err := c.SmsDB.Close(); err != nil {
 			log.Printf("⚠️ Error closing SmsDB: %v", err)
+			errs = append(errs, err)
 		}
 	}
-}
 
-func closeMainDB(db *gorm.DB) {
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Printf("⚠️ Failed to retrieve SQL DB from GORM to close: %v", err)
-		return
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to close databases: %v", errs)
 	}
-	if err := sqlDB.Close(); err != nil {
-		log.Printf("⚠️ Error closing MainDB: %v", err)
-	}
+	return nil
 }

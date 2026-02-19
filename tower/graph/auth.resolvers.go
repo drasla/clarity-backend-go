@@ -7,9 +7,10 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"tower/graph/model"
 	"tower/model/maindb"
+	"tower/pkg/fnMapper"
+	"tower/pkg/fnMiddleware"
 	service "tower/services"
 )
 
@@ -70,31 +71,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInp
 		return nil, err
 	}
 
-	resUser := &model.User{
-		ID:             fmt.Sprint(user.ID),
-		Username:       user.Username,
-		Email:          user.Email,
-		Name:           user.Name,
-		PhoneNumber:    user.PhoneNumber,
-		LandlineNumber: user.LandlineNumber,
-		Role:           string(user.Role),
-		Type:           string(user.Type),
-	}
-
-	if user.Type == maindb.TypeBusiness && user.BizRegNumber != nil {
-		resUser.BizInfo = &model.BusinessInfo{
-			BizRegNumber:  *user.BizRegNumber,
-			BizCeo:        *user.BizCEO,
-			BizType:       *user.BizType,
-			BizItem:       *user.BizItem,
-			BizZipCode:    *user.BizZipCode,
-			BizAddress1:   *user.BizAddress1,
-			BizAddress2:   user.BizAddress2,
-			BizLicenseURL: user.BizLicenseURL,
-		}
-	}
-
-	return resUser, nil
+	return fnMapper.UserToGraphQL(user), nil
 }
 
 // Login is the resolver for the login field.
@@ -104,10 +81,7 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 		return nil, err
 	}
 
-	return &model.Token{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return fnMapper.TokenToGraphQL(accessToken, refreshToken), nil
 }
 
 // RefreshToken is the resolver for the refreshToken field.
@@ -116,22 +90,31 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*mod
 	if err != nil {
 		return nil, err
 	}
-	return &model.Token{
-		AccessToken:  newAccess,
-		RefreshToken: newRefresh,
-	}, nil
+	return fnMapper.TokenToGraphQL(newAccess, newRefresh), nil
 }
 
+// Withdraw is the resolver for the withdraw field.
 func (r *mutationResolver) Withdraw(ctx context.Context) (bool, error) {
-	// TODO: Context에서 현재 로그인한 UserID를 꺼내야 함 (Middleware 필요)
-	// userID := ctx.Value("userID").(uint)
-	// 임시로 하드코딩 (Middleware 구현 전이라)
-	userID := uint(1)
+	userID, err := fnMiddleware.GetUserIDFromContext(ctx)
+	if err != nil {
+		return false, err
+	}
 
-	err := r.AuthService.Withdraw(ctx, userID)
+	err = r.AuthService.Withdraw(ctx, userID)
 	return err == nil, err
 }
 
+// Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+	userID, err := fnMiddleware.GetUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := r.UserService.GetUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return fnMapper.UserToGraphQL(user), nil
 }

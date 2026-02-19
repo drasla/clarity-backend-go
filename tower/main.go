@@ -15,9 +15,10 @@ func main() {
 	}
 
 	db := database.MustInit()
-	defer db.Close()
 
 	errHandler := handler.NewErrorHandler(db.MainDB)
 
-	fnEcho.StartEchoServer(db, errHandler)
+	srv := fnEcho.StartEchoServer(db, errHandler)
+
+	fnEcho.WaitForShutdown(srv, db)
 }
