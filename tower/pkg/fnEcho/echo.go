@@ -69,6 +69,7 @@ func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) 
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"GET", "POST", "OPTIONS"},
 	}))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(2.0)))
 
 	e.Use(fnMiddleware.JwtMiddleware())
 
@@ -79,8 +80,12 @@ func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) 
 	verificationService := service.NewVerificationService(verificationRepo)
 	authService := service.NewAuthService(userRepo, sessionRepo, verificationService)
 	userService := service.NewUserService(userRepo)
+	fileService, err := service.NewS3Service()
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize FileService: %v", err)
+	}
 
-	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService)
+	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService, fileService)
 
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/graphql")))
 	e.POST("/graphql", echo.WrapHandler(graphqlHandler))

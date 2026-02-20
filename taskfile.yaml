@@ -26,7 +26,7 @@ tasks:
       - go run github.com/99designs/gqlgen generate
       - git add graph
     sources:
-      - graph/*.graphql
+      - graph/schema/*.graphql
       - gqlgen.yml
     generates:
       - graph/generated.go

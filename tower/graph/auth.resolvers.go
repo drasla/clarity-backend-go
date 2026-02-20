@@ -106,10 +106,7 @@ func (r *mutationResolver) Withdraw(ctx context.Context) (bool, error) {
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	userID, err := fnMiddleware.GetUserIDFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
+	userID, _ := fnMiddleware.GetUserIDFromContext(ctx)
 
 	user, err := r.UserService.GetUser(ctx, userID)
 	if err != nil {

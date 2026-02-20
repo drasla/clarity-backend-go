@@ -68,3 +68,5 @@ go.work.sum
 # fnEnv file
 .env
 
+.task
+

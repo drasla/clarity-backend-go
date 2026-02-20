@@ -32,6 +32,11 @@ type BusinessInput struct {
 	BizLicenseURL *string `json:"bizLicenseURL,omitempty"`
 }
 
+type FileInfo struct {
+	URL      string `json:"url"`
+	FileName string `json:"fileName"`
+}
+
 type Mutation struct {
 }
 

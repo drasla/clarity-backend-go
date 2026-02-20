@@ -1,0 +1,10 @@
+scalar Upload
+
+type FileInfo {
+    url: String!
+    fileName: String!
+}
+
+extend type Mutation {
+    uploadFile(file: Upload!, directory: String): FileInfo!
+}

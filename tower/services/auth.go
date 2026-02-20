@@ -66,14 +66,14 @@ func (s *authService) Register(ctx context.Context, input RegisterInput) (*maind
 		return nil, errors.New("already exists email")
 	}
 
-	isVerified, err := s.verificationService.IsVerified(ctx, input.PhoneNumber, maindb.VerifySMS)
-	if err != nil {
-		return nil, err
-	}
-
-	if !isVerified {
-		return nil, errors.New("휴대폰 인증이 완료되지 않았습니다")
-	}
+	//isVerified, err := s.verificationService.IsVerified(ctx, input.PhoneNumber, maindb.VerifySMS)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//if !isVerified {
+	//	return nil, errors.New("휴대폰 인증이 완료되지 않았습니다")
+	//}
 
 	hashedPw, err := fnCrypto.HashPassword(input.Password)
 	if err != nil {
@@ -81,16 +81,17 @@ func (s *authService) Register(ctx context.Context, input RegisterInput) (*maind
 	}
 
 	user := &maindb.User{
-		Username:    input.Username,
-		Password:    hashedPw,
-		Name:        input.Name,
-		Email:       input.Email,
-		PhoneNumber: input.PhoneNumber,
-		AgreeEmail:  input.AgreeEmail,
-		AgreeSMS:    input.AgreeSMS,
-		Role:        maindb.RoleUser,
-		Type:        maindb.TypePersonal,
-		Status:      maindb.StatusActive,
+		Username:       input.Username,
+		Password:       hashedPw,
+		Name:           input.Name,
+		Email:          input.Email,
+		PhoneNumber:    input.PhoneNumber,
+		LandlineNumber: input.LandlineNumber,
+		AgreeEmail:     input.AgreeEmail,
+		AgreeSMS:       input.AgreeSMS,
+		Role:           maindb.RoleUser,
+		Type:           maindb.TypePersonal,
+		Status:         maindb.StatusActive,
 	}
 
 	if input.BizInfo != nil {

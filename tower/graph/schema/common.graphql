@@ -1,3 +1,7 @@
+directive @auth on FIELD_DEFINITION
+
+
+
 type Query {
     _empty: String
 }

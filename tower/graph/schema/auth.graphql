@@ -78,9 +78,9 @@ extend type Mutation {
     register(input: RegisterInput!): User!
     login(email: String!, password: String!): Token!
     refreshToken(token: String!): Token!
-    withdraw: Boolean!
+    withdraw: Boolean! @auth
 }
 
 extend type Query {
-    me: User
+    me: User @auth
 }
