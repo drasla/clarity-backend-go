@@ -2,7 +2,6 @@ package fnEcho
 
 import (
 	"tower/graph"
-	"tower/pkg/fnMiddleware"
 	service "tower/services"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -22,6 +21,7 @@ func NewGraphQLServer(
 	authService service.AuthService,
 	verService service.VerificationService,
 	userService service.UserService,
+	inquiryService service.InquiryService,
 	fileService service.FileService,
 ) *handler.Server {
 	c := graph.Config{
@@ -29,22 +29,13 @@ func NewGraphQLServer(
 			AuthService:         authService,
 			VerificationService: verService,
 			UserService:         userService,
+			InquiryService:      inquiryService,
 			FileService:         fileService,
 		},
 	}
 
-	c.Directives.Auth = func(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
-		_, err := fnMiddleware.GetUserIDFromContext(ctx)
-		if err != nil {
-			return nil, &gqlerror.Error{
-				Message: "접근 권한이 없습니다. (로그인 필요)",
-				Extensions: map[string]interface{}{
-					"code": "UNAUTHORIZED",
-				},
-			}
-		}
-		return next(ctx)
-	}
+	c.Directives.Auth = graph.AuthDirective
+	c.Directives.Admin = graph.AdminDirective
 
 	srv := handler.New(graph.NewExecutableSchema(c))
 

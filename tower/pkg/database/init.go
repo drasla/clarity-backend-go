@@ -20,6 +20,8 @@ func MustInit() *Container {
 		&maindb.User{},
 		&maindb.RefreshToken{},
 		&maindb.Verification{},
+		&maindb.File{},
+		&maindb.Inquiry{},
 	)
 	if err != nil {
 		log.Fatalf("❌ Migration Failed: %v", err)

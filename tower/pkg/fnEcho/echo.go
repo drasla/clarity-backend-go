@@ -77,16 +77,18 @@ func createEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) 
 	userRepo := repository.NewUserRepository(db.MainDB)
 	sessionRepo := repository.NewSessionRepository(db.MainDB)
 	verificationRepo := repository.NewVerificationRepository(db.MainDB)
+	inquiryRepo := repository.NewInquiryRepository(db.MainDB)
 
 	verificationService := service.NewVerificationService(verificationRepo)
 	authService := service.NewAuthService(userRepo, sessionRepo, verificationService)
 	userService := service.NewUserService(userRepo)
+	inquiryService := service.NewInquiryService(inquiryRepo)
 	fileService, err := service.NewS3Service()
 	if err != nil {
 		log.Fatalf("❌ Failed to initialize FileService: %v", err)
 	}
 
-	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService, fileService)
+	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService, inquiryService, fileService)
 
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/graphql")))
 	e.POST("/graphql", echo.WrapHandler(graphqlHandler))

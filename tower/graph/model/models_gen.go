@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+type AnswerInquiryInput struct {
+	Answer string        `json:"answer"`
+	Status InquiryStatus `json:"status"`
+}
+
 type BusinessInfo struct {
 	BizRegNumber  string  `json:"bizRegNumber"`
 	BizCeo        string  `json:"bizCEO"`
@@ -32,12 +37,90 @@ type BusinessInput struct {
 	BizLicenseURL *string `json:"bizLicenseURL,omitempty"`
 }
 
+type CreateInquiryInput struct {
+	Category    InquiryCategory `json:"category"`
+	Domain      *string         `json:"domain,omitempty"`
+	Title       string          `json:"title"`
+	Content     string          `json:"content"`
+	Email       string          `json:"email"`
+	PhoneNumber string          `json:"phoneNumber"`
+	NonMemberPw *string         `json:"nonMemberPw,omitempty"`
+	Attachments []*FileInput    `json:"attachments,omitempty"`
+}
+
+type File struct {
+	ID           int       `json:"id"`
+	CreatedAt    time.Time `json:"createdAt"`
+	OriginalName string    `json:"originalName"`
+	StoredName   string    `json:"storedName"`
+	URL          string    `json:"url"`
+	Size         int64     `json:"size"`
+	Extension    string    `json:"extension"`
+}
+
 type FileInfo struct {
-	URL      string `json:"url"`
-	FileName string `json:"fileName"`
+	OriginalName string `json:"originalName"`
+	StoredName   string `json:"storedName"`
+	URL          string `json:"url"`
+	Size         int64  `json:"size"`
+	Extension    string `json:"extension"`
+}
+
+type FileInput struct {
+	OriginalName string `json:"originalName"`
+	StoredName   string `json:"storedName"`
+	URL          string `json:"url"`
+	Size         int    `json:"size"`
+	Extension    string `json:"extension"`
+}
+
+type Inquiry struct {
+	ID          int             `json:"id"`
+	CreatedAt   time.Time       `json:"createdAt"`
+	UpdatedAt   time.Time       `json:"updatedAt"`
+	UserID      *int            `json:"userId,omitempty"`
+	Category    InquiryCategory `json:"category"`
+	Domain      *string         `json:"domain,omitempty"`
+	Title       string          `json:"title"`
+	Content     string          `json:"content"`
+	Email       string          `json:"email"`
+	PhoneNumber string          `json:"phoneNumber"`
+	Status      InquiryStatus   `json:"status"`
+	Answer      *string         `json:"answer,omitempty"`
+	AnsweredAt  *time.Time      `json:"answeredAt,omitempty"`
+	Attachments []*File         `json:"attachments"`
+}
+
+type InquiryList struct {
+	Total int        `json:"total"`
+	Size  int        `json:"size"`
+	Page  int        `json:"page"`
+	List  []*Inquiry `json:"list"`
+}
+
+type InquirySearchInput struct {
+	Status   *InquiryStatus   `json:"status,omitempty"`
+	Domain   *string          `json:"domain,omitempty"`
+	Category *InquiryCategory `json:"category,omitempty"`
+	Keyword  *string          `json:"keyword,omitempty"`
+}
+
+type ModifyInquiryInput struct {
+	Category    *InquiryCategory `json:"category,omitempty"`
+	Domain      *string          `json:"domain,omitempty"`
+	Title       *string          `json:"title,omitempty"`
+	Content     *string          `json:"content,omitempty"`
+	Email       *string          `json:"email,omitempty"`
+	PhoneNumber *string          `json:"phoneNumber,omitempty"`
+	Attachments []*FileInput     `json:"attachments,omitempty"`
 }
 
 type Mutation struct {
+}
+
+type PageInput struct {
+	Page int `json:"page"`
+	Size int `json:"size"`
 }
 
 type Query struct {
@@ -75,6 +158,126 @@ type User struct {
 	AgreeEmail     bool          `json:"agreeEmail"`
 	AgreeSms       bool          `json:"agreeSMS"`
 	BizInfo        *BusinessInfo `json:"bizInfo,omitempty"`
+}
+
+type InquiryCategory string
+
+const (
+	InquiryCategoryDomain     InquiryCategory = "DOMAIN"
+	InquiryCategoryHosting    InquiryCategory = "HOSTING"
+	InquiryCategoryGoldenShop InquiryCategory = "GOLDEN_SHOP"
+	InquiryCategoryEmail      InquiryCategory = "EMAIL"
+	InquiryCategorySsl        InquiryCategory = "SSL"
+	InquiryCategoryUserInfo   InquiryCategory = "USER_INFO"
+	InquiryCategoryEtc        InquiryCategory = "ETC"
+)
+
+var AllInquiryCategory = []InquiryCategory{
+	InquiryCategoryDomain,
+	InquiryCategoryHosting,
+	InquiryCategoryGoldenShop,
+	InquiryCategoryEmail,
+	InquiryCategorySsl,
+	InquiryCategoryUserInfo,
+	InquiryCategoryEtc,
+}
+
+func (e InquiryCategory) IsValid() bool {
+	switch e {
+	case InquiryCategoryDomain, InquiryCategoryHosting, InquiryCategoryGoldenShop, InquiryCategoryEmail, InquiryCategorySsl, InquiryCategoryUserInfo, InquiryCategoryEtc:
+		return true
+	}
+	return false
+}
+
+func (e InquiryCategory) String() string {
+	return string(e)
+}
+
+func (e *InquiryCategory) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = InquiryCategory(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid InquiryCategory", str)
+	}
+	return nil
+}
+
+func (e InquiryCategory) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *InquiryCategory) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e InquiryCategory) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type InquiryStatus string
+
+const (
+	InquiryStatusPending   InquiryStatus = "PENDING"
+	InquiryStatusCompleted InquiryStatus = "COMPLETED"
+)
+
+var AllInquiryStatus = []InquiryStatus{
+	InquiryStatusPending,
+	InquiryStatusCompleted,
+}
+
+func (e InquiryStatus) IsValid() bool {
+	switch e {
+	case InquiryStatusPending, InquiryStatusCompleted:
+		return true
+	}
+	return false
+}
+
+func (e InquiryStatus) String() string {
+	return string(e)
+}
+
+func (e *InquiryStatus) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = InquiryStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid InquiryStatus", str)
+	}
+	return nil
+}
+
+func (e InquiryStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *InquiryStatus) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e InquiryStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }
 
 type UserRole string

@@ -8,6 +8,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"tower/graph/model"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -16,9 +17,26 @@ import (
 // UploadFile is the resolver for the uploadFile field.
 func (r *mutationResolver) UploadFile(ctx context.Context, file graphql.Upload, directory *string) (*model.FileInfo, error) {
 	allowedMimeTypes := map[string]bool{
-		"image/jpeg":      true,
-		"image/png":       true,
-		"application/pdf": true,
+		"image/jpeg": true, // .jpg, .jpeg
+		"image/png":  true, // .png
+		"image/gif":  true, // .gif
+
+		"application/pdf": true, // .pdf
+		"text/plain":      true, // .txt
+		"text/csv":        true, // .csv
+
+		"application/msword": true, // .doc
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true, // .docx
+
+		"application/vnd.ms-excel": true, // .xls
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": true, // .xlsx
+
+		"application/vnd.ms-powerpoint":                                             true, // .ppt
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation": true, // .pptx
+
+		"application/x-hwp":          true,
+		"application/haansofthwp":    true,
+		"application/vnd.hancom.hwp": true,
 	}
 	if !allowedMimeTypes[file.ContentType] {
 		return nil, fmt.Errorf("❌ 허용되지 않는 파일 형식입니다: %s", file.ContentType)
@@ -29,13 +47,16 @@ func (r *mutationResolver) UploadFile(ctx context.Context, file graphql.Upload, 
 		dir = *directory
 	}
 
-	fileURL, err := r.FileService.UploadFile(ctx, file, dir)
+	result, err := r.FileService.UploadFile(ctx, file, dir)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.FileInfo{
-		URL:      fileURL,
-		FileName: file.Filename,
+		URL:          result.URL,
+		StoredName:   result.StoredName,
+		OriginalName: file.Filename,
+		Size:         file.Size,
+		Extension:    filepath.Ext(file.Filename),
 	}, nil
 }

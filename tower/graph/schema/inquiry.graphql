@@ -1,0 +1,86 @@
+enum InquiryStatus {
+    PENDING
+    COMPLETED
+}
+
+enum InquiryCategory {
+    DOMAIN
+    HOSTING
+    GOLDEN_SHOP
+    EMAIL
+    SSL
+    USER_INFO
+    ETC
+}
+
+type Inquiry {
+    id: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    userId: Int
+    category: InquiryCategory!
+    domain: String
+    title: String!
+    content: String!
+    email: String!
+    phoneNumber: String!
+    status: InquiryStatus!
+    answer: String
+    answeredAt: Time
+
+    attachments: [File!]!
+}
+
+input CreateInquiryInput {
+    category: InquiryCategory!
+    domain: String
+    title: String!
+    content: String!
+    email: String!
+    phoneNumber: String!
+    nonMemberPw: String
+    attachments: [FileInput!]
+}
+
+type InquiryList {
+    total: Int!
+    size: Int!
+    page: Int!
+    list: [Inquiry!]!
+}
+
+input InquirySearchInput {
+    status: InquiryStatus
+    domain: String
+    category: InquiryCategory
+    keyword: String
+}
+
+extend type Query {
+    findOneInquiryById(id: Int!, password: String): Inquiry!
+    findManyPublicInquiries(page: PageInput!, search: InquirySearchInput): InquiryList!
+    findManyMyInquiries(page: PageInput!): InquiryList!  @auth
+    findManyInquiriesForAdmin(page: PageInput!, search: InquirySearchInput): InquiryList! @admin
+}
+
+input ModifyInquiryInput {
+    category: InquiryCategory
+    domain: String
+    title: String
+    content: String
+    email: String
+    phoneNumber: String
+    attachments: [FileInput!]
+}
+
+input AnswerInquiryInput {
+    answer: String!
+    status: InquiryStatus!
+}
+
+extend type Mutation {
+    createInquiry(input: CreateInquiryInput!): Inquiry!
+    modifyInquiry(id: Int!, input: ModifyInquiryInput!, password: String): Inquiry!
+    deleteInquiry(id: Int!, password: String): Boolean!
+    answerInquiry(id: Int!, input: AnswerInquiryInput!): Inquiry! @admin
+}

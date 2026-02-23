@@ -6,5 +6,6 @@ type Resolver struct {
 	AuthService         service.AuthService
 	VerificationService service.VerificationService
 	UserService         service.UserService
+	InquiryService      service.InquiryService
 	FileService         service.FileService
 }

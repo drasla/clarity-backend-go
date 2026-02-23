@@ -17,6 +17,7 @@ const (
 	UserIDKey    contextKey = "UserID"
 	ClientIPKey  contextKey = "ClientIP"
 	UserAgentKey contextKey = "UserAgent"
+	RoleKey      contextKey = "Role"
 )
 
 func JwtMiddleware() echo.MiddlewareFunc {
@@ -44,6 +45,7 @@ func JwtMiddleware() echo.MiddlewareFunc {
 
 			if claims, ok := token.Claims.(*fnJwt.JwtCustomClaims); ok && token.Valid {
 				ctx := context.WithValue(c.Request().Context(), UserIDKey, claims.UserID)
+				ctx = context.WithValue(ctx, RoleKey, claims.Role)
 				c.SetRequest(c.Request().WithContext(ctx))
 			}
 			return next(c)

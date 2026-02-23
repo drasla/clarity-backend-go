@@ -1,8 +1,30 @@
 scalar Upload
+scalar Int64
 
 type FileInfo {
+    originalName: String!
+    storedName: String!
     url: String!
-    fileName: String!
+    size: Int64!
+    extension: String!
+}
+
+type File {
+    id: Int!
+    createdAt: Time!
+    originalName: String!
+    storedName: String!
+    url: String!
+    size: Int64!
+    extension: String!
+}
+
+input FileInput {
+    originalName: String!
+    storedName: String!
+    url: String!
+    size: Int!
+    extension: String!
 }
 
 extend type Mutation {
