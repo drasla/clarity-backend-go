@@ -14,7 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	"context"
-	localHandler "tower/pkg/handler"
+	localHandler "tower/pkg/fnError"
 )
 
 func NewGraphQLServer(

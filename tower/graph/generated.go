@@ -68,7 +68,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		ConfirmVerification func(childComplexity int, target string, typeArg model.VerificationType, code string) int
 		Empty               func(childComplexity int) int
-		Login               func(childComplexity int, email string, password string) int
+		Login               func(childComplexity int, username string, password string) int
 		RefreshToken        func(childComplexity int, token string) int
 		Register            func(childComplexity int, input model.RegisterInput) int
 		RequestVerification func(childComplexity int, target string, typeArg model.VerificationType) int
@@ -109,7 +109,7 @@ type MutationResolver interface {
 	RequestVerification(ctx context.Context, target string, typeArg model.VerificationType) (bool, error)
 	ConfirmVerification(ctx context.Context, target string, typeArg model.VerificationType, code string) (bool, error)
 	Register(ctx context.Context, input model.RegisterInput) (*model.User, error)
-	Login(ctx context.Context, email string, password string) (*model.Token, error)
+	Login(ctx context.Context, username string, password string) (*model.Token, error)
 	RefreshToken(ctx context.Context, token string) (*model.Token, error)
 	Withdraw(ctx context.Context) (bool, error)
 	UploadFile(ctx context.Context, file graphql.Upload, directory *string) (*model.FileInfo, error)
@@ -227,7 +227,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Login(childComplexity, args["email"].(string), args["password"].(string)), true
+		return e.complexity.Mutation.Login(childComplexity, args["username"].(string), args["password"].(string)), true
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
 			break
@@ -542,11 +542,11 @@ func (ec *executionContext) field_Mutation_confirmVerification_args(ctx context.
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "email", ec.unmarshalNString2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "username", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
 	}
-	args["email"] = arg0
+	args["username"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "password", ec.unmarshalNString2string)
 	if err != nil {
 		return nil, err
@@ -1152,7 +1152,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 		ec.fieldContext_Mutation_login,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().Login(ctx, fc.Args["email"].(string), fc.Args["password"].(string))
+			return ec.resolvers.Mutation().Login(ctx, fc.Args["username"].(string), fc.Args["password"].(string))
 		},
 		nil,
 		ec.marshalNToken2ᚖtowerᚋgraphᚋmodelᚐToken,

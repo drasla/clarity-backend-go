@@ -13,7 +13,11 @@ import (
 
 type contextKey string
 
-const UserIDKey contextKey = "UserID"
+const (
+	UserIDKey    contextKey = "UserID"
+	ClientIPKey  contextKey = "ClientIP"
+	UserAgentKey contextKey = "UserAgent"
+)
 
 func JwtMiddleware() echo.MiddlewareFunc {
 	secret := fnEnv.GetString("JWT_SECRET", "secret_key_needs_to_be_changed")
@@ -58,4 +62,20 @@ func GetUserIDFromContext(ctx context.Context) (uint, error) {
 		return 0, echo.NewHTTPError(http.StatusInternalServerError, "invalid user id type in context")
 	}
 	return userID, nil
+}
+
+func ClientInfoMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			clientIP := c.RealIP()
+			userAgent := c.Request().UserAgent()
+
+			ctx := c.Request().Context()
+			ctx = context.WithValue(ctx, ClientIPKey, clientIP)
+			ctx = context.WithValue(ctx, UserAgentKey, userAgent)
+			c.SetRequest(c.Request().WithContext(ctx))
+
+			return next(c)
+		}
+	}
 }

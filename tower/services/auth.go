@@ -7,7 +7,9 @@ import (
 	"tower/model/maindb"
 	"tower/pkg/fnCrypto"
 	"tower/pkg/fnEnv"
+	"tower/pkg/fnError"
 	"tower/pkg/fnJwt"
+	"tower/pkg/fnMiddleware"
 	"tower/repository"
 )
 
@@ -113,24 +115,24 @@ func (s *authService) Register(ctx context.Context, input RegisterInput) (*maind
 	return user, nil
 }
 
-func (s *authService) Login(ctx context.Context, email, password string) (string, string, error) {
-	user, err := s.userRepo.FindByEmail(ctx, email)
+func (s *authService) Login(ctx context.Context, username, password string) (string, string, error) {
+	user, err := s.userRepo.FindByUsername(ctx, username)
 	if err != nil {
 		return "", "", err
 	}
 	if user == nil {
-		return "", "", errors.New("user not found")
+		return "", "", fnError.NewUnauthorized("아이디 또는 비밀번호가 일치하지 않습니다.")
 	}
 
 	if user.Status == maindb.StatusWithdrawn {
-		return "", "", errors.New("user has withdrawn")
+		return "", "", fnError.NewForbidden("탈퇴한 사용자입니다.")
 	}
 	if user.Status == maindb.StatusSuspended {
-		return "", "", errors.New("user is suspended")
+		return "", "", fnError.NewForbidden("정지된 사용자입니다.")
 	}
 
 	if !fnCrypto.CheckPassword(password, user.Password) {
-		return "", "", errors.New("incorrect password")
+		return "", "", fnError.NewUnauthorized("아이디 또는 비밀번호가 일치하지 않습니다.")
 	}
 
 	accessToken, err := fnJwt.GenerateAccessToken(user.ID, string(user.Role), s.jwtSecret)
@@ -143,12 +145,22 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 		return "", "", err
 	}
 
+	clientIP, ok := ctx.Value(fnMiddleware.ClientIPKey).(string)
+	if !ok || clientIP == "" {
+		clientIP = "Unknown"
+	}
+
+	userAgent, ok := ctx.Value(fnMiddleware.UserAgentKey).(string)
+	if !ok || userAgent == "" {
+		userAgent = "Unknown"
+	}
+
 	err = s.sessionRepo.Create(ctx, &maindb.RefreshToken{
 		UserID:    user.ID,
 		Token:     refreshToken,
-		ExpiresAt: time.Now().Add(time.Hour * 24 * 14), // 2주
-		ClientIP:  "127.0.0.1",                         // TODO: Context에서 실제 IP 추출 필요
-		UserAgent: "Unknown",                           // TODO: Context에서 UserAgent 추출 필요
+		ExpiresAt: time.Now().Add(time.Hour * 24 * 14),
+		ClientIP:  clientIP,
+		UserAgent: userAgent,
 	})
 	if err != nil {
 		return "", "", err

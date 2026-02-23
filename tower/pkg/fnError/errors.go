@@ -1,4 +1,4 @@
-package xerr
+package fnError
 
 import (
 	"fmt"
@@ -33,6 +33,18 @@ func NewBadRequest(msg string) *AppError {
 		Code:        http.StatusBadRequest,
 		Action:      ActionReturn,
 	}
+}
+
+func NewUnauthorized(msg string) *AppError {
+	return &AppError{UserMessage: msg, Code: http.StatusUnauthorized, Action: ActionReturn}
+}
+
+func NewForbidden(msg string) *AppError {
+	return &AppError{UserMessage: msg, Code: http.StatusForbidden, Action: ActionReturn}
+}
+
+func NewNotFound(msg string) *AppError {
+	return &AppError{UserMessage: msg, Code: http.StatusNotFound, Action: ActionReturn}
 }
 
 func NewInternalError(err error, msg string) *AppError {

@@ -76,7 +76,7 @@ extend type Mutation {
     requestVerification(target: String!, type: VerificationType!): Boolean!
     confirmVerification(target: String!, type: VerificationType!, code: String!): Boolean!
     register(input: RegisterInput!): User!
-    login(email: String!, password: String!): Token!
+    login(username: String!, password: String!): Token!
     refreshToken(token: String!): Token!
     withdraw: Boolean! @auth
 }

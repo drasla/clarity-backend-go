@@ -1,11 +1,10 @@
-package handler
+package fnError
 
 import (
 	"context"
 	"errors"
 	"log"
 	"time"
-	"tower/pkg/xerr"
 
 	"gorm.io/gorm"
 )
@@ -25,30 +24,30 @@ func NewErrorHandler(db *gorm.DB) *ErrorHandler {
 	return &ErrorHandler{DB: db}
 }
 
-func (h *ErrorHandler) Handle(ctx context.Context, err error) *xerr.AppError {
-	var appErr *xerr.AppError
+func (h *ErrorHandler) Handle(_ context.Context, err error) *AppError {
+	var appErr *AppError
 	ok := errors.As(err, &appErr)
 	if !ok {
-		appErr = xerr.NewInternalError(err, "Internal Server Error")
+		appErr = NewInternalError(err, "Internal Server Error")
 	}
 
 	switch appErr.Action {
-	case xerr.ActionPanic:
+	case ActionPanic:
 		h.logToDB(appErr)
 		panic(appErr)
 
-	case xerr.ActionLogAndReturn:
+	case ActionLogAndReturn:
 		h.logToDB(appErr)
 		return appErr
 
-	case xerr.ActionReturn:
+	case ActionReturn:
 		return appErr
 	}
 
 	return appErr
 }
 
-func (h *ErrorHandler) logToDB(appErr *xerr.AppError) {
+func (h *ErrorHandler) logToDB(appErr *AppError) {
 	go func() {
 		errMsg := appErr.UserMessage
 		errDetail := ""

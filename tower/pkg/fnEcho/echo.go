@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"tower/pkg/database"
 	"tower/pkg/fnEnv"
+	"tower/pkg/fnError"
 	"tower/pkg/fnMiddleware"
-	"tower/pkg/handler"
 	"tower/repository"
 	service "tower/services"
 
@@ -16,7 +16,7 @@ import (
 	"github.com/labstack/echo/v5/middleware"
 )
 
-func StartEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *http.Server {
+func StartEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) *http.Server {
 	e := createEchoServer(db, errHandler)
 	port := fnEnv.GetString("PORT", "8080")
 	addr := ":" + port
@@ -34,7 +34,7 @@ func StartEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *
 	return srv
 }
 
-func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) *echo.Echo {
+func createEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) *echo.Echo {
 	e := echo.New()
 
 	e.HTTPErrorHandler = func(c *echo.Context, err error) {
@@ -71,6 +71,7 @@ func createEchoServer(db *database.Container, errHandler *handler.ErrorHandler) 
 	}))
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(2.0)))
 
+	e.Use(fnMiddleware.ClientInfoMiddleware())
 	e.Use(fnMiddleware.JwtMiddleware())
 
 	userRepo := repository.NewUserRepository(db.MainDB)

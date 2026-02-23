@@ -4,7 +4,7 @@ import (
 	"log"
 	"tower/pkg/database"
 	"tower/pkg/fnEcho"
-	"tower/pkg/handler"
+	"tower/pkg/fnError"
 
 	"github.com/joho/godotenv"
 )
@@ -16,7 +16,7 @@ func main() {
 
 	db := database.MustInit()
 
-	errHandler := handler.NewErrorHandler(db.MainDB)
+	errHandler := fnError.NewErrorHandler(db.MainDB)
 
 	srv := fnEcho.StartEchoServer(db, errHandler)
 
