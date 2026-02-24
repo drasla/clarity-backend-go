@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 	"tower/graph/model"
 	"tower/model/maindb"
 	"tower/pkg/fnCrypto"
+	"tower/pkg/fnEnv"
 	"tower/pkg/fnError"
 	"tower/pkg/fnMiddleware"
+	"tower/pkg/fnNotifier"
 	"tower/repository"
 
 	"gorm.io/gorm"
@@ -71,6 +74,26 @@ func (s *inquiryService) Create(ctx context.Context, input model.CreateInquiryIn
 	if err := s.repo.Create(ctx, inquiry); err != nil {
 		return nil, err
 	}
+
+	go func(inq *maindb.Inquiry) {
+		token := fnEnv.GetString("TELEGRAM_BOT_TOKEN", "")
+		chatID := fnEnv.GetString("TELEGRAM_CHAT_ID", "")
+
+		if token != "" && chatID != "" {
+			msg := fmt.Sprintf(
+				"🚨 <b>[새로운 1:1 문의 등록]</b>\n\n"+
+					"<b>분류:</b> %s\n"+
+					"<b>제목:</b> %s\n"+
+					"<b>연락처:</b> %s\n"+
+					"<b>이메일:</b> %s\n\n"+
+					"관리자 페이지에서 확인해주세요!",
+				inq.Category, inq.Title, inq.PhoneNumber, inq.Email,
+			)
+
+			fnNotifier.SendTelegramMessage(token, chatID, msg)
+		}
+	}(inquiry)
+
 	return inquiry, nil
 }
 

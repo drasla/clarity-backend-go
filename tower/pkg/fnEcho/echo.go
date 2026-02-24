@@ -69,7 +69,7 @@ func createEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) 
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"GET", "POST", "OPTIONS"},
 	}))
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(2.0)))
+	//e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(2.0)))
 
 	e.Use(fnMiddleware.ClientInfoMiddleware())
 	e.Use(fnMiddleware.JwtMiddleware())

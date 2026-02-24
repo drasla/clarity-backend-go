@@ -35,6 +35,7 @@ func InquiryToGraphQL(inquiry *maindb.Inquiry) *model.Inquiry {
 		UserID:      userId,
 		Category:    model.InquiryCategory(inquiry.Category),
 		Domain:      inquiry.Domain,
+		Title:       inquiry.Title,
 		Content:     inquiry.Content,
 		Email:       inquiry.Email,
 		PhoneNumber: inquiry.PhoneNumber,

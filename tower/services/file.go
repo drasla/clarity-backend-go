@@ -91,7 +91,7 @@ func (s *fileService) UploadFile(ctx context.Context, file graphql.Upload, direc
 		return nil, fmt.Errorf("스토리지 업로드 에러: %w", err)
 	}
 
-	fileURL := fmt.Sprintf("%s/%s", s.domain, objectKey)
+	fileURL := fmt.Sprintf("%s/%s/%s", s.domain, s.bucketName, objectKey)
 	return &UploadResult{
 		URL:        fileURL,
 		StoredName: uniqueFilename,
