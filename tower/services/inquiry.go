@@ -10,6 +10,7 @@ import (
 	"tower/pkg/fnCrypto"
 	"tower/pkg/fnEnv"
 	"tower/pkg/fnError"
+	"tower/pkg/fnMailer"
 	"tower/pkg/fnMiddleware"
 	"tower/pkg/fnNotifier"
 	"tower/repository"
@@ -213,6 +214,15 @@ func (s *inquiryService) Answer(ctx context.Context, id int, input model.AnswerI
 		return nil, fnError.NewInternalError(err, "답변 등록 중 오류가 발생했습니다.")
 	}
 
-	// TODO: 여기서 고객에게 알림톡/이메일 발송 로직 추가
+	go func(inq *maindb.Inquiry, ans string) {
+		htmlContent := fnMailer.GetInquiryAnswerTemplate(inq.Title, ans)
+
+		subject := fmt.Sprintf("[고객센터] '%s' 문의에 대한 답변이 등록되었습니다.", inq.Title)
+
+		if inq.Email != "" {
+			_ = fnMailer.Send(inq.Email, subject, htmlContent)
+		}
+	}(inquiry, input.Answer)
+
 	return inquiry, nil
 }

@@ -22,6 +22,7 @@ func MustInit() *Container {
 		&maindb.Verification{},
 		&maindb.File{},
 		&maindb.Inquiry{},
+		&maindb.EmailTemplate{},
 	)
 	if err != nil {
 		log.Fatalf("❌ Migration Failed: %v", err)
