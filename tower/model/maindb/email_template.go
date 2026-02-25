@@ -7,5 +7,6 @@ type EmailTemplate struct {
 	TemplateCode string `gorm:"type:varchar(50);uniqueIndex;not null"`
 	Subject      string `gorm:"type:varchar(255);not null"`
 	HTMLBody     string `gorm:"type:text;not null"`
+	Variables    string `gorm:"type:text"`
 	Description  string `gorm:"type:varchar(255)"`
 }

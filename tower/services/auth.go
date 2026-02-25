@@ -55,7 +55,7 @@ func NewAuthService(u repository.UserRepository, s repository.SessionRepository,
 		userRepo:            u,
 		sessionRepo:         s,
 		verificationService: v,
-		jwtSecret:           fnEnv.GetString("JWT_SECRET", "secret_key_needs_to_be_changed"),
+		jwtSecret:           fnEnv.App.JwtSecret,
 	}
 }
 

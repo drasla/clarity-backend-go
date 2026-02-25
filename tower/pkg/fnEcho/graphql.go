@@ -22,15 +22,17 @@ func NewGraphQLServer(
 	verService service.VerificationService,
 	userService service.UserService,
 	inquiryService service.InquiryService,
+	emailTemplateService service.EmailTemplateService,
 	fileService service.FileService,
 ) *handler.Server {
 	c := graph.Config{
 		Resolvers: &graph.Resolver{
-			AuthService:         authService,
-			VerificationService: verService,
-			UserService:         userService,
-			InquiryService:      inquiryService,
-			FileService:         fileService,
+			AuthService:          authService,
+			VerificationService:  verService,
+			UserService:          userService,
+			InquiryService:       inquiryService,
+			EmailTemplateService: emailTemplateService,
+			FileService:          fileService,
 		},
 	}
 

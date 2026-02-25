@@ -25,20 +25,20 @@ type Config struct {
 
 func LoadConfigFromEnv() (*Config, error) {
 	mainConfig := ConnectionInfo{
-		Host:     fnEnv.GetString("MYSQL84_HOST", "127.0.0.1"),
-		Port:     fnEnv.GetString("MYSQL84_PORT", "8054"),
-		User:     fnEnv.GetString("MYSQL84_USERNAME", "root"),
-		Password: fnEnv.GetString("MYSQL84_PASSWORD", ""),
-		DBName:   fnEnv.GetString("MYSQL84_DATABASE", ""),
+		Host:     fnEnv.App.MySQL84Host,
+		Port:     fnEnv.App.MySQL84Port,
+		User:     fnEnv.App.MySQL84Username,
+		Password: fnEnv.App.MySQL84Password,
+		DBName:   fnEnv.App.MySQL84Database,
 		Charset:  "utf8mb4",
 	}
 
 	smsConfig := ConnectionInfo{
-		Host:     fnEnv.GetString("MYSQL51_HOST", "127.0.0.1"),
-		Port:     fnEnv.GetString("MYSQL51_PORT", "8051"),
-		User:     fnEnv.GetString("MYSQL51_USERNAME", "root"),
-		Password: fnEnv.GetString("MYSQL51_PASSWORD", ""),
-		DBName:   fnEnv.GetString("MYSQL51_DATABASE", ""),
+		Host:     fnEnv.App.MySQL51Host,
+		Port:     fnEnv.App.MySQL51Port,
+		User:     fnEnv.App.MySQL51Username,
+		Password: fnEnv.App.MySQL51Password,
+		DBName:   fnEnv.App.MySQL51Database,
 		Charset:  "utf8",
 	}
 

@@ -61,6 +61,24 @@ type ComplexityRoot struct {
 		BizZipCode    func(childComplexity int) int
 	}
 
+	EmailTemplate struct {
+		CreatedAt    func(childComplexity int) int
+		Description  func(childComplexity int) int
+		HTMLBody     func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Subject      func(childComplexity int) int
+		TemplateCode func(childComplexity int) int
+		UpdatedAt    func(childComplexity int) int
+		Variables    func(childComplexity int) int
+	}
+
+	EmailTemplateList struct {
+		List  func(childComplexity int) int
+		Page  func(childComplexity int) int
+		Size  func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
+
 	File struct {
 		CreatedAt    func(childComplexity int) int
 		Extension    func(childComplexity int) int
@@ -106,10 +124,13 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AnswerInquiry       func(childComplexity int, id int, input model.AnswerInquiryInput) int
 		ConfirmVerification func(childComplexity int, target string, typeArg model.VerificationType, code string) int
+		CreateEmailTemplate func(childComplexity int, input model.CreateEmailTemplateInput) int
 		CreateInquiry       func(childComplexity int, input model.CreateInquiryInput) int
+		DeleteEmailTemplate func(childComplexity int, id int) int
 		DeleteInquiry       func(childComplexity int, id int, password *string) int
 		Empty               func(childComplexity int) int
 		Login               func(childComplexity int, username string, password string) int
+		ModifyEmailTemplate func(childComplexity int, id int, input model.ModifyEmailTemplateInput) int
 		ModifyInquiry       func(childComplexity int, id int, input model.ModifyInquiryInput, password *string) int
 		RefreshToken        func(childComplexity int, token string) int
 		Register            func(childComplexity int, input model.RegisterInput) int
@@ -120,9 +141,11 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Empty                     func(childComplexity int) int
+		FindManyEmailTemplates    func(childComplexity int, page model.PageInput, search *model.EmailTemplateSearchInput) int
 		FindManyInquiriesForAdmin func(childComplexity int, page model.PageInput, search *model.InquirySearchInput) int
 		FindManyMyInquiries       func(childComplexity int, page model.PageInput) int
 		FindManyPublicInquiries   func(childComplexity int, page model.PageInput, search *model.InquirySearchInput) int
+		FindOneEmailTemplateByID  func(childComplexity int, id int) int
 		FindOneInquiryByID        func(childComplexity int, id int, password *string) int
 		Me                        func(childComplexity int) int
 	}
@@ -158,6 +181,9 @@ type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.Token, error)
 	RefreshToken(ctx context.Context, token string) (*model.Token, error)
 	Withdraw(ctx context.Context) (bool, error)
+	CreateEmailTemplate(ctx context.Context, input model.CreateEmailTemplateInput) (*model.EmailTemplate, error)
+	ModifyEmailTemplate(ctx context.Context, id int, input model.ModifyEmailTemplateInput) (*model.EmailTemplate, error)
+	DeleteEmailTemplate(ctx context.Context, id int) (bool, error)
 	UploadFile(ctx context.Context, file graphql.Upload, directory *string) (*model.FileInfo, error)
 	CreateInquiry(ctx context.Context, input model.CreateInquiryInput) (*model.Inquiry, error)
 	ModifyInquiry(ctx context.Context, id int, input model.ModifyInquiryInput, password *string) (*model.Inquiry, error)
@@ -167,6 +193,8 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Empty(ctx context.Context) (*string, error)
 	Me(ctx context.Context) (*model.User, error)
+	FindOneEmailTemplateByID(ctx context.Context, id int) (*model.EmailTemplate, error)
+	FindManyEmailTemplates(ctx context.Context, page model.PageInput, search *model.EmailTemplateSearchInput) (*model.EmailTemplateList, error)
 	FindOneInquiryByID(ctx context.Context, id int, password *string) (*model.Inquiry, error)
 	FindManyPublicInquiries(ctx context.Context, page model.PageInput, search *model.InquirySearchInput) (*model.InquiryList, error)
 	FindManyMyInquiries(ctx context.Context, page model.PageInput) (*model.InquiryList, error)
@@ -240,6 +268,80 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.BusinessInfo.BizZipCode(childComplexity), true
+
+	case "EmailTemplate.createdAt":
+		if e.complexity.EmailTemplate.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.CreatedAt(childComplexity), true
+	case "EmailTemplate.description":
+		if e.complexity.EmailTemplate.Description == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.Description(childComplexity), true
+	case "EmailTemplate.htmlBody":
+		if e.complexity.EmailTemplate.HTMLBody == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.HTMLBody(childComplexity), true
+	case "EmailTemplate.id":
+		if e.complexity.EmailTemplate.ID == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.ID(childComplexity), true
+	case "EmailTemplate.subject":
+		if e.complexity.EmailTemplate.Subject == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.Subject(childComplexity), true
+	case "EmailTemplate.templateCode":
+		if e.complexity.EmailTemplate.TemplateCode == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.TemplateCode(childComplexity), true
+	case "EmailTemplate.updatedAt":
+		if e.complexity.EmailTemplate.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.UpdatedAt(childComplexity), true
+	case "EmailTemplate.variables":
+		if e.complexity.EmailTemplate.Variables == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.Variables(childComplexity), true
+
+	case "EmailTemplateList.list":
+		if e.complexity.EmailTemplateList.List == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplateList.List(childComplexity), true
+	case "EmailTemplateList.page":
+		if e.complexity.EmailTemplateList.Page == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplateList.Page(childComplexity), true
+	case "EmailTemplateList.size":
+		if e.complexity.EmailTemplateList.Size == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplateList.Size(childComplexity), true
+	case "EmailTemplateList.total":
+		if e.complexity.EmailTemplateList.Total == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplateList.Total(childComplexity), true
 
 	case "File.createdAt":
 		if e.complexity.File.CreatedAt == nil {
@@ -447,6 +549,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.ConfirmVerification(childComplexity, args["target"].(string), args["type"].(model.VerificationType), args["code"].(string)), true
+	case "Mutation.createEmailTemplate":
+		if e.complexity.Mutation.CreateEmailTemplate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createEmailTemplate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateEmailTemplate(childComplexity, args["input"].(model.CreateEmailTemplateInput)), true
 	case "Mutation.createInquiry":
 		if e.complexity.Mutation.CreateInquiry == nil {
 			break
@@ -458,6 +571,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateInquiry(childComplexity, args["input"].(model.CreateInquiryInput)), true
+	case "Mutation.deleteEmailTemplate":
+		if e.complexity.Mutation.DeleteEmailTemplate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteEmailTemplate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteEmailTemplate(childComplexity, args["id"].(int)), true
 	case "Mutation.deleteInquiry":
 		if e.complexity.Mutation.DeleteInquiry == nil {
 			break
@@ -486,6 +610,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["username"].(string), args["password"].(string)), true
+	case "Mutation.modifyEmailTemplate":
+		if e.complexity.Mutation.ModifyEmailTemplate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_modifyEmailTemplate_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ModifyEmailTemplate(childComplexity, args["id"].(int), args["input"].(model.ModifyEmailTemplateInput)), true
 	case "Mutation.modifyInquiry":
 		if e.complexity.Mutation.ModifyInquiry == nil {
 			break
@@ -554,6 +689,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Empty(childComplexity), true
+	case "Query.findManyEmailTemplates":
+		if e.complexity.Query.FindManyEmailTemplates == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findManyEmailTemplates_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindManyEmailTemplates(childComplexity, args["page"].(model.PageInput), args["search"].(*model.EmailTemplateSearchInput)), true
 	case "Query.findManyInquiriesForAdmin":
 		if e.complexity.Query.FindManyInquiriesForAdmin == nil {
 			break
@@ -587,6 +733,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.FindManyPublicInquiries(childComplexity, args["page"].(model.PageInput), args["search"].(*model.InquirySearchInput)), true
+	case "Query.findOneEmailTemplateById":
+		if e.complexity.Query.FindOneEmailTemplateByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findOneEmailTemplateById_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindOneEmailTemplateByID(childComplexity, args["id"].(int)), true
 	case "Query.findOneInquiryById":
 		if e.complexity.Query.FindOneInquiryByID == nil {
 			break
@@ -713,9 +870,12 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAnswerInquiryInput,
 		ec.unmarshalInputBusinessInput,
+		ec.unmarshalInputCreateEmailTemplateInput,
 		ec.unmarshalInputCreateInquiryInput,
+		ec.unmarshalInputEmailTemplateSearchInput,
 		ec.unmarshalInputFileInput,
 		ec.unmarshalInputInquirySearchInput,
+		ec.unmarshalInputModifyEmailTemplateInput,
 		ec.unmarshalInputModifyInquiryInput,
 		ec.unmarshalInputPageInput,
 		ec.unmarshalInputRegisterInput,
@@ -815,7 +975,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/auth.graphql" "schema/common.graphql" "schema/file.graphql" "schema/inquiry.graphql"
+//go:embed "schema/auth.graphql" "schema/common.graphql" "schema/email_template.graphql" "schema/file.graphql" "schema/inquiry.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -829,6 +989,7 @@ func sourceData(filename string) string {
 var sources = []*ast.Source{
 	{Name: "schema/auth.graphql", Input: sourceData("schema/auth.graphql"), BuiltIn: false},
 	{Name: "schema/common.graphql", Input: sourceData("schema/common.graphql"), BuiltIn: false},
+	{Name: "schema/email_template.graphql", Input: sourceData("schema/email_template.graphql"), BuiltIn: false},
 	{Name: "schema/file.graphql", Input: sourceData("schema/file.graphql"), BuiltIn: false},
 	{Name: "schema/inquiry.graphql", Input: sourceData("schema/inquiry.graphql"), BuiltIn: false},
 }
@@ -875,6 +1036,17 @@ func (ec *executionContext) field_Mutation_confirmVerification_args(ctx context.
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createEmailTemplate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCreateEmailTemplateInput2towerᚋgraphᚋmodelᚐCreateEmailTemplateInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createInquiry_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -883,6 +1055,17 @@ func (ec *executionContext) field_Mutation_createInquiry_args(ctx context.Contex
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteEmailTemplate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -915,6 +1098,22 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 		return nil, err
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_modifyEmailTemplate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNModifyEmailTemplateInput2towerᚋgraphᚋmodelᚐModifyEmailTemplateInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1004,6 +1203,22 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_findManyEmailTemplates_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "page", ec.unmarshalNPageInput2towerᚋgraphᚋmodelᚐPageInput)
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "search", ec.unmarshalOEmailTemplateSearchInput2ᚖtowerᚋgraphᚋmodelᚐEmailTemplateSearchInput)
+	if err != nil {
+		return nil, err
+	}
+	args["search"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_findManyInquiriesForAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1044,6 +1259,17 @@ func (ec *executionContext) field_Query_findManyPublicInquiries_args(ctx context
 		return nil, err
 	}
 	args["search"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findOneEmailTemplateById_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNInt2int)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1342,6 +1568,372 @@ func (ec *executionContext) fieldContext_BusinessInfo_bizLicenseURL(_ context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_id(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_createdAt,
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_updatedAt,
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_templateCode(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_templateCode,
+		func(ctx context.Context) (any, error) {
+			return obj.TemplateCode, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_templateCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_subject(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_subject,
+		func(ctx context.Context) (any, error) {
+			return obj.Subject, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_subject(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_htmlBody(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_htmlBody,
+		func(ctx context.Context) (any, error) {
+			return obj.HTMLBody, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_htmlBody(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_variables(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_variables,
+		func(ctx context.Context) (any, error) {
+			return obj.Variables, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_variables(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_description(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_description,
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		ec.marshalOString2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplateList_total(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplateList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplateList_total,
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplateList_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplateList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplateList_size(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplateList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplateList_size,
+		func(ctx context.Context) (any, error) {
+			return obj.Size, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplateList_size(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplateList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplateList_page(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplateList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplateList_page,
+		func(ctx context.Context) (any, error) {
+			return obj.Page, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplateList_page(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplateList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplateList_list(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplateList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplateList_list,
+		func(ctx context.Context) (any, error) {
+			return obj.List, nil
+		},
+		nil,
+		ec.marshalNEmailTemplate2ᚕᚖtowerᚋgraphᚋmodelᚐEmailTemplateᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplateList_list(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplateList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EmailTemplate_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_EmailTemplate_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_EmailTemplate_updatedAt(ctx, field)
+			case "templateCode":
+				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
+			case "subject":
+				return ec.fieldContext_EmailTemplate_subject(ctx, field)
+			case "htmlBody":
+				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "variables":
+				return ec.fieldContext_EmailTemplate_variables(ctx, field)
+			case "description":
+				return ec.fieldContext_EmailTemplate_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EmailTemplate", field.Name)
 		},
 	}
 	return fc, nil
@@ -2581,6 +3173,204 @@ func (ec *executionContext) fieldContext_Mutation_withdraw(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createEmailTemplate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_createEmailTemplate,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().CreateEmailTemplate(ctx, fc.Args["input"].(model.CreateEmailTemplateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.EmailTemplate
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNEmailTemplate2ᚖtowerᚋgraphᚋmodelᚐEmailTemplate,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createEmailTemplate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EmailTemplate_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_EmailTemplate_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_EmailTemplate_updatedAt(ctx, field)
+			case "templateCode":
+				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
+			case "subject":
+				return ec.fieldContext_EmailTemplate_subject(ctx, field)
+			case "htmlBody":
+				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "variables":
+				return ec.fieldContext_EmailTemplate_variables(ctx, field)
+			case "description":
+				return ec.fieldContext_EmailTemplate_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EmailTemplate", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createEmailTemplate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_modifyEmailTemplate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_modifyEmailTemplate,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().ModifyEmailTemplate(ctx, fc.Args["id"].(int), fc.Args["input"].(model.ModifyEmailTemplateInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.EmailTemplate
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNEmailTemplate2ᚖtowerᚋgraphᚋmodelᚐEmailTemplate,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_modifyEmailTemplate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EmailTemplate_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_EmailTemplate_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_EmailTemplate_updatedAt(ctx, field)
+			case "templateCode":
+				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
+			case "subject":
+				return ec.fieldContext_EmailTemplate_subject(ctx, field)
+			case "htmlBody":
+				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "variables":
+				return ec.fieldContext_EmailTemplate_variables(ctx, field)
+			case "description":
+				return ec.fieldContext_EmailTemplate_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EmailTemplate", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_modifyEmailTemplate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteEmailTemplate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_deleteEmailTemplate,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().DeleteEmailTemplate(ctx, fc.Args["id"].(int))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteEmailTemplate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteEmailTemplate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_uploadFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2998,6 +3788,142 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findOneEmailTemplateById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_findOneEmailTemplateById,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().FindOneEmailTemplateByID(ctx, fc.Args["id"].(int))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.EmailTemplate
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNEmailTemplate2ᚖtowerᚋgraphᚋmodelᚐEmailTemplate,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_findOneEmailTemplateById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_EmailTemplate_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_EmailTemplate_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_EmailTemplate_updatedAt(ctx, field)
+			case "templateCode":
+				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
+			case "subject":
+				return ec.fieldContext_EmailTemplate_subject(ctx, field)
+			case "htmlBody":
+				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "variables":
+				return ec.fieldContext_EmailTemplate_variables(ctx, field)
+			case "description":
+				return ec.fieldContext_EmailTemplate_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EmailTemplate", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findOneEmailTemplateById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findManyEmailTemplates(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_findManyEmailTemplates,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().FindManyEmailTemplates(ctx, fc.Args["page"].(model.PageInput), fc.Args["search"].(*model.EmailTemplateSearchInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.EmailTemplateList
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNEmailTemplateList2ᚖtowerᚋgraphᚋmodelᚐEmailTemplateList,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_findManyEmailTemplates(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_EmailTemplateList_total(ctx, field)
+			case "size":
+				return ec.fieldContext_EmailTemplateList_size(ctx, field)
+			case "page":
+				return ec.fieldContext_EmailTemplateList_page(ctx, field)
+			case "list":
+				return ec.fieldContext_EmailTemplateList_list(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type EmailTemplateList", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findManyEmailTemplates_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -5398,6 +6324,61 @@ func (ec *executionContext) unmarshalInputBusinessInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateEmailTemplateInput(ctx context.Context, obj any) (model.CreateEmailTemplateInput, error) {
+	var it model.CreateEmailTemplateInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"templateCode", "subject", "htmlBody", "variables", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "templateCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("templateCode"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemplateCode = data
+		case "subject":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Subject = data
+		case "htmlBody":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("htmlBody"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HTMLBody = data
+		case "variables":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variables"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Variables = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateInquiryInput(ctx context.Context, obj any) (model.CreateInquiryInput, error) {
 	var it model.CreateInquiryInput
 	asMap := map[string]any{}
@@ -5468,6 +6449,33 @@ func (ec *executionContext) unmarshalInputCreateInquiryInput(ctx context.Context
 				return it, err
 			}
 			it.Attachments = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputEmailTemplateSearchInput(ctx context.Context, obj any) (model.EmailTemplateSearchInput, error) {
+	var it model.EmailTemplateSearchInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"keyword"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "keyword":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyword"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Keyword = data
 		}
 	}
 
@@ -5571,6 +6579,61 @@ func (ec *executionContext) unmarshalInputInquirySearchInput(ctx context.Context
 				return it, err
 			}
 			it.Keyword = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputModifyEmailTemplateInput(ctx context.Context, obj any) (model.ModifyEmailTemplateInput, error) {
+	var it model.ModifyEmailTemplateInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"templateCode", "subject", "htmlBody", "variables", "description"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "templateCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("templateCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemplateCode = data
+		case "subject":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Subject = data
+		case "htmlBody":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("htmlBody"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HTMLBody = data
+		case "variables":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variables"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Variables = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
 		}
 	}
 
@@ -5823,6 +6886,128 @@ func (ec *executionContext) _BusinessInfo(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._BusinessInfo_bizAddress2(ctx, field, obj)
 		case "bizLicenseURL":
 			out.Values[i] = ec._BusinessInfo_bizLicenseURL(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var emailTemplateImplementors = []string{"EmailTemplate"}
+
+func (ec *executionContext) _EmailTemplate(ctx context.Context, sel ast.SelectionSet, obj *model.EmailTemplate) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, emailTemplateImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EmailTemplate")
+		case "id":
+			out.Values[i] = ec._EmailTemplate_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._EmailTemplate_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._EmailTemplate_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "templateCode":
+			out.Values[i] = ec._EmailTemplate_templateCode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "subject":
+			out.Values[i] = ec._EmailTemplate_subject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "htmlBody":
+			out.Values[i] = ec._EmailTemplate_htmlBody(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "variables":
+			out.Values[i] = ec._EmailTemplate_variables(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._EmailTemplate_description(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var emailTemplateListImplementors = []string{"EmailTemplateList"}
+
+func (ec *executionContext) _EmailTemplateList(ctx context.Context, sel ast.SelectionSet, obj *model.EmailTemplateList) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, emailTemplateListImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EmailTemplateList")
+		case "total":
+			out.Values[i] = ec._EmailTemplateList_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "size":
+			out.Values[i] = ec._EmailTemplateList_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "page":
+			out.Values[i] = ec._EmailTemplateList_page(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "list":
+			out.Values[i] = ec._EmailTemplateList_list(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6185,6 +7370,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createEmailTemplate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createEmailTemplate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "modifyEmailTemplate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_modifyEmailTemplate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteEmailTemplate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteEmailTemplate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "uploadFile":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_uploadFile(ctx, field)
@@ -6291,6 +7497,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_me(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findOneEmailTemplateById":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findOneEmailTemplateById(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findManyEmailTemplates":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findManyEmailTemplates(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -6917,9 +8167,86 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCreateEmailTemplateInput2towerᚋgraphᚋmodelᚐCreateEmailTemplateInput(ctx context.Context, v any) (model.CreateEmailTemplateInput, error) {
+	res, err := ec.unmarshalInputCreateEmailTemplateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateInquiryInput2towerᚋgraphᚋmodelᚐCreateInquiryInput(ctx context.Context, v any) (model.CreateInquiryInput, error) {
 	res, err := ec.unmarshalInputCreateInquiryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNEmailTemplate2towerᚋgraphᚋmodelᚐEmailTemplate(ctx context.Context, sel ast.SelectionSet, v model.EmailTemplate) graphql.Marshaler {
+	return ec._EmailTemplate(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEmailTemplate2ᚕᚖtowerᚋgraphᚋmodelᚐEmailTemplateᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EmailTemplate) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEmailTemplate2ᚖtowerᚋgraphᚋmodelᚐEmailTemplate(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNEmailTemplate2ᚖtowerᚋgraphᚋmodelᚐEmailTemplate(ctx context.Context, sel ast.SelectionSet, v *model.EmailTemplate) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._EmailTemplate(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNEmailTemplateList2towerᚋgraphᚋmodelᚐEmailTemplateList(ctx context.Context, sel ast.SelectionSet, v model.EmailTemplateList) graphql.Marshaler {
+	return ec._EmailTemplateList(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEmailTemplateList2ᚖtowerᚋgraphᚋmodelᚐEmailTemplateList(ctx context.Context, sel ast.SelectionSet, v *model.EmailTemplateList) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._EmailTemplateList(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNFile2ᚕᚖtowerᚋgraphᚋmodelᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.File) graphql.Marshaler {
@@ -7133,6 +8460,11 @@ func (ec *executionContext) marshalNInt642int64(ctx context.Context, sel ast.Sel
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNModifyEmailTemplateInput2towerᚋgraphᚋmodelᚐModifyEmailTemplateInput(ctx context.Context, v any) (model.ModifyEmailTemplateInput, error) {
+	res, err := ec.unmarshalInputModifyEmailTemplateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNModifyInquiryInput2towerᚋgraphᚋmodelᚐModifyInquiryInput(ctx context.Context, v any) (model.ModifyInquiryInput, error) {
@@ -7561,6 +8893,14 @@ func (ec *executionContext) unmarshalOBusinessInput2ᚖtowerᚋgraphᚋmodelᚐB
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputBusinessInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOEmailTemplateSearchInput2ᚖtowerᚋgraphᚋmodelᚐEmailTemplateSearchInput(ctx context.Context, v any) (*model.EmailTemplateSearchInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputEmailTemplateSearchInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

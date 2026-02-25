@@ -1,0 +1,48 @@
+type EmailTemplate {
+    id: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    templateCode: String!
+    subject: String!
+    htmlBody: String!
+    variables: String
+    description: String
+}
+
+type EmailTemplateList {
+    total: Int!
+    size: Int!
+    page: Int!
+    list: [EmailTemplate!]!
+}
+
+input EmailTemplateSearchInput {
+    keyword: String
+}
+
+input CreateEmailTemplateInput {
+    templateCode: String!
+    subject: String!
+    htmlBody: String!
+    variables: String
+    description: String
+}
+
+input ModifyEmailTemplateInput {
+    templateCode: String
+    subject: String
+    htmlBody: String
+    variables: String
+    description: String
+}
+
+extend type Query {
+    findOneEmailTemplateById(id: Int!): EmailTemplate! @admin
+    findManyEmailTemplates(page: PageInput!, search: EmailTemplateSearchInput): EmailTemplateList! @admin
+}
+
+extend type Mutation {
+    createEmailTemplate(input: CreateEmailTemplateInput!): EmailTemplate! @admin
+    modifyEmailTemplate(id: Int!, input: ModifyEmailTemplateInput!): EmailTemplate! @admin
+    deleteEmailTemplate(id: Int!): Boolean! @admin
+}

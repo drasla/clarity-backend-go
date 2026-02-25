@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 	"tower/graph/model"
 	"tower/model/maindb"
@@ -30,11 +31,15 @@ type InquiryService interface {
 }
 
 type inquiryService struct {
-	repo repository.InquiryRepository
+	repo         repository.InquiryRepository
+	templateRepo repository.EmailTemplateRepository
 }
 
-func NewInquiryService(repo repository.InquiryRepository) InquiryService {
-	return &inquiryService{repo: repo}
+func NewInquiryService(repo repository.InquiryRepository, templateRepo repository.EmailTemplateRepository) InquiryService {
+	return &inquiryService{
+		repo:         repo,
+		templateRepo: templateRepo,
+	}
 }
 
 func (s *inquiryService) Create(ctx context.Context, input model.CreateInquiryInput) (*maindb.Inquiry, error) {
@@ -77,8 +82,8 @@ func (s *inquiryService) Create(ctx context.Context, input model.CreateInquiryIn
 	}
 
 	go func(inq *maindb.Inquiry) {
-		token := fnEnv.GetString("TELEGRAM_BOT_TOKEN", "")
-		chatID := fnEnv.GetString("TELEGRAM_CHAT_ID", "")
+		token := fnEnv.App.TelegramBotToken
+		chatID := fnEnv.App.TelegramChatID
 
 		if token != "" && chatID != "" {
 			msg := fmt.Sprintf(
@@ -215,13 +220,27 @@ func (s *inquiryService) Answer(ctx context.Context, id int, input model.AnswerI
 	}
 
 	go func(inq *maindb.Inquiry, ans string) {
-		htmlContent := fnMailer.GetInquiryAnswerTemplate(inq.Title, ans)
-
-		subject := fmt.Sprintf("[고객센터] '%s' 문의에 대한 답변이 등록되었습니다.", inq.Title)
-
-		if inq.Email != "" {
-			_ = fnMailer.Send(inq.Email, subject, htmlContent)
+		if inq.Email == "" {
+			return
 		}
+
+		bgCtx := context.Background()
+
+		tmpl, err := s.templateRepo.FindByCode(bgCtx, "INQUIRY_REPLY")
+		if err != nil {
+			log.Printf("[이메일 발송 실패] 템플릿(INQUIRY_REPLY) 조회 오류: %v\n", err)
+			return
+		}
+
+		templateContext := map[string]any{
+			"Inquiry": inq,
+			"Answer":  ans,
+		}
+
+		subject, _ := fnMailer.CompileTemplate(tmpl.Subject, templateContext)
+		htmlBody, _ := fnMailer.CompileTemplate(tmpl.HTMLBody, templateContext)
+
+		_ = fnMailer.Send(inq.Email, subject, htmlBody)
 	}(inquiry, input.Answer)
 
 	return inquiry, nil

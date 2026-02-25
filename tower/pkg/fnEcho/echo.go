@@ -18,7 +18,7 @@ import (
 
 func StartEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) *http.Server {
 	e := createEchoServer(db, errHandler)
-	port := fnEnv.GetString("PORT", "8080")
+	port := fnEnv.App.Port
 	addr := ":" + port
 	srv := &http.Server{
 		Addr:    addr,
@@ -78,17 +78,19 @@ func createEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) 
 	sessionRepo := repository.NewSessionRepository(db.MainDB)
 	verificationRepo := repository.NewVerificationRepository(db.MainDB)
 	inquiryRepo := repository.NewInquiryRepository(db.MainDB)
+	emailTemplateRepo := repository.NewEmailTemplateRepository(db.MainDB)
 
 	verificationService := service.NewVerificationService(verificationRepo)
 	authService := service.NewAuthService(userRepo, sessionRepo, verificationService)
 	userService := service.NewUserService(userRepo)
-	inquiryService := service.NewInquiryService(inquiryRepo)
+	inquiryService := service.NewInquiryService(inquiryRepo, emailTemplateRepo)
+	emailTemplateService := service.NewEmailTemplateService(emailTemplateRepo)
 	fileService, err := service.NewS3Service()
 	if err != nil {
 		log.Fatalf("❌ Failed to initialize FileService: %v", err)
 	}
 
-	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService, inquiryService, fileService)
+	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService, inquiryService, emailTemplateService, fileService)
 
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/graphql")))
 	e.POST("/graphql", echo.WrapHandler(graphqlHandler))

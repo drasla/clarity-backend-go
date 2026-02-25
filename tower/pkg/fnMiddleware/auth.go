@@ -21,7 +21,7 @@ const (
 )
 
 func JwtMiddleware() echo.MiddlewareFunc {
-	secret := fnEnv.GetString("JWT_SECRET", "secret_key_needs_to_be_changed")
+	secret := fnEnv.App.JwtSecret
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {

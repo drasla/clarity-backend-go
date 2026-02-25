@@ -37,6 +37,14 @@ type BusinessInput struct {
 	BizLicenseURL *string `json:"bizLicenseURL,omitempty"`
 }
 
+type CreateEmailTemplateInput struct {
+	TemplateCode string  `json:"templateCode"`
+	Subject      string  `json:"subject"`
+	HTMLBody     string  `json:"htmlBody"`
+	Variables    *string `json:"variables,omitempty"`
+	Description  *string `json:"description,omitempty"`
+}
+
 type CreateInquiryInput struct {
 	Category    InquiryCategory `json:"category"`
 	Domain      *string         `json:"domain,omitempty"`
@@ -46,6 +54,28 @@ type CreateInquiryInput struct {
 	PhoneNumber string          `json:"phoneNumber"`
 	NonMemberPw *string         `json:"nonMemberPw,omitempty"`
 	Attachments []*FileInput    `json:"attachments,omitempty"`
+}
+
+type EmailTemplate struct {
+	ID           int       `json:"id"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	TemplateCode string    `json:"templateCode"`
+	Subject      string    `json:"subject"`
+	HTMLBody     string    `json:"htmlBody"`
+	Variables    *string   `json:"variables,omitempty"`
+	Description  *string   `json:"description,omitempty"`
+}
+
+type EmailTemplateList struct {
+	Total int              `json:"total"`
+	Size  int              `json:"size"`
+	Page  int              `json:"page"`
+	List  []*EmailTemplate `json:"list"`
+}
+
+type EmailTemplateSearchInput struct {
+	Keyword *string `json:"keyword,omitempty"`
 }
 
 type File struct {
@@ -103,6 +133,14 @@ type InquirySearchInput struct {
 	Domain   *string          `json:"domain,omitempty"`
 	Category *InquiryCategory `json:"category,omitempty"`
 	Keyword  *string          `json:"keyword,omitempty"`
+}
+
+type ModifyEmailTemplateInput struct {
+	TemplateCode *string `json:"templateCode,omitempty"`
+	Subject      *string `json:"subject,omitempty"`
+	HTMLBody     *string `json:"htmlBody,omitempty"`
+	Variables    *string `json:"variables,omitempty"`
+	Description  *string `json:"description,omitempty"`
 }
 
 type ModifyInquiryInput struct {

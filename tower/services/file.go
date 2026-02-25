@@ -32,13 +32,13 @@ type fileService struct {
 }
 
 func NewS3Service() (FileService, error) {
-	endpoint := fnEnv.GetString("S3_ENDPOINT", "")
+	endpoint := fnEnv.App.S3Endpoint
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "http://")
-	accessKey := fnEnv.GetString("S3_ACCESS_KEY", "")
-	secretKey := fnEnv.GetString("S3_SECRET_KEY", "")
-	bucketName := fnEnv.GetString("S3_BUCKET_NAME", "")
-	domain := fnEnv.GetString("S3_DOMAIN", "")
+	accessKey := fnEnv.App.S3AccessKey
+	secretKey := fnEnv.App.S3SecretKey
+	bucketName := fnEnv.App.S3BucketName
+	domain := fnEnv.App.S3Domain
 
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
