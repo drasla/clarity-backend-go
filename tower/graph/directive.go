@@ -2,7 +2,7 @@ package graph
 
 import (
 	"context"
-	"tower/model/maindb"
+	"tower/graph/model"
 	"tower/pkg/fnError"
 	"tower/pkg/fnMiddleware"
 
@@ -24,9 +24,12 @@ func AuthDirective(ctx context.Context, _ interface{}, next graphql.Resolver) (i
 }
 
 func AdminDirective(ctx context.Context, _ interface{}, next graphql.Resolver) (interface{}, error) {
-	role, ok := ctx.Value(fnMiddleware.RoleKey).(maindb.UserRole)
-
-	if !ok || role != maindb.RoleAdmin {
+	rawRole := ctx.Value(fnMiddleware.RoleKey)
+	roleStr, ok := rawRole.(string)
+	if !ok {
+		return nil, fnError.NewForbidden("권한 정보를 읽을 수 없습니다.")
+	}
+	if roleStr != string(model.UserRoleAdmin) {
 		return nil, fnError.NewForbidden("관리자 권한이 필요합니다.")
 	}
 

@@ -40,5 +40,5 @@ type Inquiry struct {
 	Answer      *string         `gorm:"type:text"`
 	AnsweredAt  *time.Time
 
-	Attachments []File `gorm:"polymorphic:Target;"`
+	Attachments []File `gorm:"polymorphic:Target;polymorphicValue:inquiry"`
 }
