@@ -6,7 +6,6 @@ import (
 	"time"
 	"tower/model/maindb"
 	"tower/pkg/fnCrypto"
-	"tower/pkg/fnEnv"
 	"tower/pkg/fnError"
 	"tower/pkg/fnJwt"
 	"tower/pkg/fnMiddleware"
@@ -50,12 +49,12 @@ type authService struct {
 	jwtSecret           string
 }
 
-func NewAuthService(u repository.UserRepository, s repository.SessionRepository, v VerificationService) AuthService {
+func NewAuthService(u repository.UserRepository, s repository.SessionRepository, v VerificationService, jwtSecret string) AuthService {
 	return &authService{
 		userRepo:            u,
 		sessionRepo:         s,
 		verificationService: v,
-		jwtSecret:           fnEnv.App.JwtSecret,
+		jwtSecret:           jwtSecret,
 	}
 }
 

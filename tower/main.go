@@ -1,26 +1,19 @@
 package main
 
 import (
-	"log"
-	"tower/pkg/database"
-	"tower/pkg/fnEcho"
-	"tower/pkg/fnEnv"
+	"tower/config"
 	"tower/pkg/fnError"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Info: No .fnEnv file found, relying on environment variables")
-	}
-	fnEnv.Load()
+	config.LoadEnv()
 
-	db := database.MustInit()
+	db := config.InitDatabase()
+	defer db.Close()
 
+	execSchema := config.NewExecutableSchema(db)
 	errHandler := fnError.NewErrorHandler(db.MainDB)
+	srv := config.StartWebServer(errHandler, execSchema)
 
-	srv := fnEcho.StartEchoServer(db, errHandler)
-
-	fnEcho.WaitForShutdown(srv, db)
+	config.WaitForShutdown(srv, db)
 }

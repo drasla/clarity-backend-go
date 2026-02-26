@@ -5,12 +5,18 @@ import (
 	"context"
 	"html/template"
 	"log"
-	"sync"
 	"time"
-	"tower/pkg/fnEnv"
+	"tower/model/maindb"
 
 	"github.com/mailgun/mailgun-go/v5"
+	"gorm.io/gorm"
 )
+
+type Config struct {
+	Domain string
+	APIKey string
+	Sender string
+}
 
 type Mailer struct {
 	mg     *mailgun.Client
@@ -20,29 +26,24 @@ type Mailer struct {
 
 var (
 	instance *Mailer
-	once     sync.Once
+	logDB    *gorm.DB
 )
 
-func getMailer() *Mailer {
-	once.Do(func() {
-		domain := fnEnv.App.MailgunDomain
-		apiKey := fnEnv.App.MailgunAPIKey
-		sender := fnEnv.App.MailSender
+func Init(cfg Config, db *gorm.DB) {
+	if cfg.Domain == "" || cfg.APIKey == "" {
+		log.Println("[fnMailer] ⚠️ Mailgun 환경변수가 누락되어 메일러를 초기화할 수 없습니다.")
+		return
+	}
 
-		if domain == "" || apiKey == "" {
-			log.Println("[fnMailer] Mailgun 환경변수가 설정되지 않아 메일러를 초기화할 수 없습니다.")
-			return
-		}
+	mg := mailgun.NewMailgun(cfg.APIKey)
+	instance = &Mailer{
+		mg:     mg,
+		domain: cfg.Domain,
+		sender: cfg.Sender,
+	}
 
-		mg := mailgun.NewMailgun(apiKey)
-		instance = &Mailer{
-			mg:     mg,
-			domain: domain,
-			sender: sender,
-		}
-		log.Println("[fnMailer] Mailgun 객체 지연 초기화 완료 📧")
-	})
-	return instance
+	logDB = db
+	log.Println("[fnMailer] Mailgun 클라이언트 초기화 및 DB 주입 완료 📧")
 }
 
 func CompileTemplate(tmplStr string, data any) (string, error) {
@@ -59,25 +60,41 @@ func CompileTemplate(tmplStr string, data any) (string, error) {
 	return buf.String(), nil
 }
 
-func Send(to, subject, htmlContent string) error {
-	mailer := getMailer()
-	if mailer == nil {
-		log.Println("[fnMailer] 메일러가 초기화되지 않았습니다. 발송 스킵:", to)
-		return nil
-	}
-
-	message := mailgun.NewMessage(mailer.domain, mailer.sender, subject, "", to)
+func Send(templateCode, to, subject, htmlContent string) error {
+	message := mailgun.NewMessage(instance.domain, instance.sender, subject, "", to)
 	message.SetHTML(htmlContent)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	resp, err := mailer.mg.Send(ctx, message)
+	resp, err := instance.mg.Send(ctx, message)
+
+	status := maindb.EmailLogStatusSuccess
+	var providerID, errMsg string
 	if err != nil {
-		log.Printf("[fnMailer] 이메일 발송 실패 (%s): %v\n", to, err)
-		return err
+		status = maindb.EmailLogStatusFailed
+		errMsg = err.Error()
+		log.Printf("발송 실패 (%s): %v\n", to, err)
+	} else {
+		providerID = resp.ID
+		log.Printf("발송 성공 (ID: %s, To: %s)\n", resp.ID, to)
 	}
 
-	log.Printf("[fnMailer] 이메일 발송 성공 (ID: %s, To: %s)\n", resp.ID, to)
+	if logDB != nil {
+		go func(logData maindb.EmailLog) {
+			if insertErr := logDB.Create(&logData).Error; insertErr != nil {
+				log.Printf("[fnMailer] 🚨 이메일 로그 DB 저장 실패: %v\n", insertErr)
+			}
+		}(maindb.EmailLog{
+			TemplateCode: templateCode,
+			Sender:       instance.sender,
+			Recipient:    to,
+			Subject:      subject,
+			HTMLBody:     htmlContent,
+			Status:       status,
+			ProviderID:   providerID,
+			ErrorMessage: errMsg,
+		})
+	}
 	return nil
 }

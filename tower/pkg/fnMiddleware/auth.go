@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"strings"
-	"tower/pkg/fnEnv"
 	"tower/pkg/fnJwt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,9 +19,7 @@ const (
 	RoleKey      contextKey = "Role"
 )
 
-func JwtMiddleware() echo.MiddlewareFunc {
-	secret := fnEnv.App.JwtSecret
-
+func JwtMiddleware(secret string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			authHeader := c.Request().Header.Get(echo.HeaderAuthorization)

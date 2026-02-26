@@ -4,30 +4,18 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
-	"tower/pkg/database"
 )
 
-func WaitForShutdown(srv *http.Server, db *database.Container) {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	log.Println("🛑 Shutting down server...")
+func Shutdown(srv *http.Server) {
+	log.Println("[fnEcho] 🛑 Shutting down Echo server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("❌ Server forced to shutdown: %v", err)
+		log.Printf("[fnEcho] ❌ Server forced to shutdown: %v", err)
+	} else {
+		log.Println("[fnEcho] ✅ Echo server shutdown completed")
 	}
-
-	if err := db.Close(); err != nil {
-		log.Printf("Error closing database: %v", err)
-	}
-
-	log.Println("👋 Server exited properly")
 }

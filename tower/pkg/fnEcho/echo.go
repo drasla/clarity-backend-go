@@ -4,28 +4,30 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"tower/pkg/database"
-	"tower/pkg/fnEnv"
 	"tower/pkg/fnError"
 	"tower/pkg/fnMiddleware"
-	"tower/repository"
-	service "tower/services"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )
 
-func StartEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) *http.Server {
-	e := createEchoServer(db, errHandler)
-	port := fnEnv.App.Port
-	addr := ":" + port
+type Config struct {
+	Port      string
+	JwtSecret string
+}
+
+func StartEchoServer(cfg Config, errHandler *fnError.ErrorHandler, execSchema graphql.ExecutableSchema) *http.Server {
+	e := createEchoServer(errHandler, execSchema, cfg)
+
+	addr := ":" + cfg.Port
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: e,
 	}
 	go func() {
-		log.Printf("🚀 Starting Echo Server on :%s", port)
+		log.Printf("🚀 Starting Echo Server on :%s", cfg.Port)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("❌ HTTP Server Error: %v", err)
 		}
@@ -34,7 +36,7 @@ func StartEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) *
 	return srv
 }
 
-func createEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) *echo.Echo {
+func createEchoServer(errHandler *fnError.ErrorHandler, execSchema graphql.ExecutableSchema, cfg Config) *echo.Echo {
 	e := echo.New()
 
 	e.HTTPErrorHandler = func(c *echo.Context, err error) {
@@ -72,25 +74,9 @@ func createEchoServer(db *database.Container, errHandler *fnError.ErrorHandler) 
 	//e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(2.0)))
 
 	e.Use(fnMiddleware.ClientInfoMiddleware())
-	e.Use(fnMiddleware.JwtMiddleware())
+	e.Use(fnMiddleware.JwtMiddleware(cfg.JwtSecret))
 
-	userRepo := repository.NewUserRepository(db.MainDB)
-	sessionRepo := repository.NewSessionRepository(db.MainDB)
-	verificationRepo := repository.NewVerificationRepository(db.MainDB)
-	inquiryRepo := repository.NewInquiryRepository(db.MainDB)
-	emailTemplateRepo := repository.NewEmailTemplateRepository(db.MainDB)
-
-	verificationService := service.NewVerificationService(verificationRepo)
-	authService := service.NewAuthService(userRepo, sessionRepo, verificationService)
-	userService := service.NewUserService(userRepo)
-	inquiryService := service.NewInquiryService(inquiryRepo, emailTemplateRepo)
-	emailTemplateService := service.NewEmailTemplateService(emailTemplateRepo)
-	fileService, err := service.NewS3Service()
-	if err != nil {
-		log.Fatalf("❌ Failed to initialize FileService: %v", err)
-	}
-
-	graphqlHandler := NewGraphQLServer(errHandler, authService, verificationService, userService, inquiryService, emailTemplateService, fileService)
+	graphqlHandler := NewGraphQLServer(errHandler, execSchema)
 
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL", "/graphql")))
 	e.POST("/graphql", echo.WrapHandler(graphqlHandler))

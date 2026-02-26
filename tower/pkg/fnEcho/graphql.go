@@ -1,9 +1,6 @@
 package fnEcho
 
 import (
-	"tower/graph"
-	service "tower/services"
-
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -18,28 +15,9 @@ import (
 
 func NewGraphQLServer(
 	errHandler *localHandler.ErrorHandler,
-	authService service.AuthService,
-	verService service.VerificationService,
-	userService service.UserService,
-	inquiryService service.InquiryService,
-	emailTemplateService service.EmailTemplateService,
-	fileService service.FileService,
+	execSchema graphql.ExecutableSchema,
 ) *handler.Server {
-	c := graph.Config{
-		Resolvers: &graph.Resolver{
-			AuthService:          authService,
-			VerificationService:  verService,
-			UserService:          userService,
-			InquiryService:       inquiryService,
-			EmailTemplateService: emailTemplateService,
-			FileService:          fileService,
-		},
-	}
-
-	c.Directives.Auth = graph.AuthDirective
-	c.Directives.Admin = graph.AdminDirective
-
-	srv := handler.New(graph.NewExecutableSchema(c))
+	srv := handler.New(execSchema)
 
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.MultipartForm{

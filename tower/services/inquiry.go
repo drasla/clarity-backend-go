@@ -9,7 +9,6 @@ import (
 	"tower/graph/model"
 	"tower/model/maindb"
 	"tower/pkg/fnCrypto"
-	"tower/pkg/fnEnv"
 	"tower/pkg/fnError"
 	"tower/pkg/fnMailer"
 	"tower/pkg/fnMiddleware"
@@ -30,15 +29,22 @@ type InquiryService interface {
 	Answer(ctx context.Context, id int, input model.AnswerInquiryInput) (*maindb.Inquiry, error)
 }
 
+type TelegramOptions struct {
+	TelegramBotToken string
+	TelegramChatID   string
+}
+
 type inquiryService struct {
 	repo         repository.InquiryRepository
 	templateRepo repository.EmailTemplateRepository
+	opts         TelegramOptions
 }
 
-func NewInquiryService(repo repository.InquiryRepository, templateRepo repository.EmailTemplateRepository) InquiryService {
+func NewInquiryService(repo repository.InquiryRepository, templateRepo repository.EmailTemplateRepository, opts TelegramOptions) InquiryService {
 	return &inquiryService{
 		repo:         repo,
 		templateRepo: templateRepo,
+		opts:         opts,
 	}
 }
 
@@ -82,8 +88,8 @@ func (s *inquiryService) Create(ctx context.Context, input model.CreateInquiryIn
 	}
 
 	go func(inq *maindb.Inquiry) {
-		token := fnEnv.App.TelegramBotToken
-		chatID := fnEnv.App.TelegramChatID
+		token := s.opts.TelegramBotToken
+		chatID := s.opts.TelegramChatID
 
 		if token != "" && chatID != "" {
 			msg := fmt.Sprintf(
@@ -240,7 +246,7 @@ func (s *inquiryService) Answer(ctx context.Context, id int, input model.AnswerI
 		subject, _ := fnMailer.CompileTemplate(tmpl.Subject, templateContext)
 		htmlBody, _ := fnMailer.CompileTemplate(tmpl.HTMLBody, templateContext)
 
-		_ = fnMailer.Send(inq.Email, subject, htmlBody)
+		_ = fnMailer.Send("", inq.Email, subject, htmlBody)
 	}(inquiry, input.Answer)
 
 	return inquiry, nil
