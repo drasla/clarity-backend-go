@@ -64,7 +64,8 @@ type ComplexityRoot struct {
 	EmailTemplate struct {
 		CreatedAt    func(childComplexity int) int
 		Description  func(childComplexity int) int
-		HTMLBody     func(childComplexity int) int
+		Design       func(childComplexity int) int
+		HTML         func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Subject      func(childComplexity int) int
 		TemplateCode func(childComplexity int) int
@@ -152,6 +153,7 @@ type ComplexityRoot struct {
 		FindManyUserForAdmin      func(childComplexity int, page model.PageInput, search *model.UserSearchInput) int
 		FindOneEmailTemplateByID  func(childComplexity int, id int) int
 		FindOneInquiryByID        func(childComplexity int, id int, password *string) int
+		FindOneUserForAdmin       func(childComplexity int, id string) int
 		Me                        func(childComplexity int) int
 	}
 
@@ -216,6 +218,7 @@ type QueryResolver interface {
 	FindManyInquiriesForAdmin(ctx context.Context, page model.PageInput, search *model.InquirySearchInput) (*model.InquiryList, error)
 	CheckPassword(ctx context.Context, password string) (bool, error)
 	FindManyUserForAdmin(ctx context.Context, page model.PageInput, search *model.UserSearchInput) (*model.UserList, error)
+	FindOneUserForAdmin(ctx context.Context, id string) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -298,12 +301,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.EmailTemplate.Description(childComplexity), true
-	case "EmailTemplate.htmlBody":
-		if e.complexity.EmailTemplate.HTMLBody == nil {
+	case "EmailTemplate.design":
+		if e.complexity.EmailTemplate.Design == nil {
 			break
 		}
 
-		return e.complexity.EmailTemplate.HTMLBody(childComplexity), true
+		return e.complexity.EmailTemplate.Design(childComplexity), true
+	case "EmailTemplate.html":
+		if e.complexity.EmailTemplate.HTML == nil {
+			break
+		}
+
+		return e.complexity.EmailTemplate.HTML(childComplexity), true
 	case "EmailTemplate.id":
 		if e.complexity.EmailTemplate.ID == nil {
 			break
@@ -827,6 +836,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.FindOneInquiryByID(childComplexity, args["id"].(int), args["password"].(*string)), true
+	case "Query.findOneUserForAdmin":
+		if e.complexity.Query.FindOneUserForAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findOneUserForAdmin_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindOneUserForAdmin(childComplexity, args["id"].(string)), true
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -1456,6 +1476,17 @@ func (ec *executionContext) field_Query_findOneInquiryById_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_findOneUserForAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field___Directive_args_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1885,14 +1916,14 @@ func (ec *executionContext) fieldContext_EmailTemplate_subject(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _EmailTemplate_htmlBody(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+func (ec *executionContext) _EmailTemplate_html(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_EmailTemplate_htmlBody,
+		ec.fieldContext_EmailTemplate_html,
 		func(ctx context.Context) (any, error) {
-			return obj.HTMLBody, nil
+			return obj.HTML, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -1901,7 +1932,36 @@ func (ec *executionContext) _EmailTemplate_htmlBody(ctx context.Context, field g
 	)
 }
 
-func (ec *executionContext) fieldContext_EmailTemplate_htmlBody(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_EmailTemplate_html(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "EmailTemplate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _EmailTemplate_design(ctx context.Context, field graphql.CollectedField, obj *model.EmailTemplate) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_EmailTemplate_design,
+		func(ctx context.Context) (any, error) {
+			return obj.Design, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_EmailTemplate_design(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "EmailTemplate",
 		Field:      field,
@@ -2093,8 +2153,10 @@ func (ec *executionContext) fieldContext_EmailTemplateList_list(_ context.Contex
 				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
 			case "subject":
 				return ec.fieldContext_EmailTemplate_subject(ctx, field)
-			case "htmlBody":
-				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "html":
+				return ec.fieldContext_EmailTemplate_html(ctx, field)
+			case "design":
+				return ec.fieldContext_EmailTemplate_design(ctx, field)
 			case "variables":
 				return ec.fieldContext_EmailTemplate_variables(ctx, field)
 			case "description":
@@ -3388,8 +3450,10 @@ func (ec *executionContext) fieldContext_Mutation_createEmailTemplate(ctx contex
 				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
 			case "subject":
 				return ec.fieldContext_EmailTemplate_subject(ctx, field)
-			case "htmlBody":
-				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "html":
+				return ec.fieldContext_EmailTemplate_html(ctx, field)
+			case "design":
+				return ec.fieldContext_EmailTemplate_design(ctx, field)
 			case "variables":
 				return ec.fieldContext_EmailTemplate_variables(ctx, field)
 			case "description":
@@ -3460,8 +3524,10 @@ func (ec *executionContext) fieldContext_Mutation_modifyEmailTemplate(ctx contex
 				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
 			case "subject":
 				return ec.fieldContext_EmailTemplate_subject(ctx, field)
-			case "htmlBody":
-				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "html":
+				return ec.fieldContext_EmailTemplate_html(ctx, field)
+			case "design":
+				return ec.fieldContext_EmailTemplate_design(ctx, field)
 			case "variables":
 				return ec.fieldContext_EmailTemplate_variables(ctx, field)
 			case "description":
@@ -4229,8 +4295,10 @@ func (ec *executionContext) fieldContext_Query_findOneEmailTemplateById(ctx cont
 				return ec.fieldContext_EmailTemplate_templateCode(ctx, field)
 			case "subject":
 				return ec.fieldContext_EmailTemplate_subject(ctx, field)
-			case "htmlBody":
-				return ec.fieldContext_EmailTemplate_htmlBody(ctx, field)
+			case "html":
+				return ec.fieldContext_EmailTemplate_html(ctx, field)
+			case "design":
+				return ec.fieldContext_EmailTemplate_design(ctx, field)
 			case "variables":
 				return ec.fieldContext_EmailTemplate_variables(ctx, field)
 			case "description":
@@ -4679,6 +4747,90 @@ func (ec *executionContext) fieldContext_Query_findManyUserForAdmin(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_findManyUserForAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findOneUserForAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_findOneUserForAdmin,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().FindOneUserForAdmin(ctx, fc.Args["id"].(string))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.User
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNUser2ᚖtowerᚋgraphᚋmodelᚐUser,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_findOneUserForAdmin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
+			case "landlineNumber":
+				return ec.fieldContext_User_landlineNumber(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "agreeEmail":
+				return ec.fieldContext_User_agreeEmail(ctx, field)
+			case "agreeSMS":
+				return ec.fieldContext_User_agreeSMS(ctx, field)
+			case "bizInfo":
+				return ec.fieldContext_User_bizInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findOneUserForAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7018,7 +7170,7 @@ func (ec *executionContext) unmarshalInputCreateEmailTemplateInput(ctx context.C
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"templateCode", "subject", "htmlBody", "variables", "description"}
+	fieldsInOrder := [...]string{"templateCode", "subject", "html", "design", "variables", "description"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7039,13 +7191,20 @@ func (ec *executionContext) unmarshalInputCreateEmailTemplateInput(ctx context.C
 				return it, err
 			}
 			it.Subject = data
-		case "htmlBody":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("htmlBody"))
+		case "html":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("html"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HTMLBody = data
+			it.HTML = data
+		case "design":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("design"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Design = data
 		case "variables":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variables"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -7279,7 +7438,7 @@ func (ec *executionContext) unmarshalInputModifyEmailTemplateInput(ctx context.C
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"templateCode", "subject", "htmlBody", "variables", "description"}
+	fieldsInOrder := [...]string{"templateCode", "subject", "html", "design", "variables", "description"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7300,13 +7459,20 @@ func (ec *executionContext) unmarshalInputModifyEmailTemplateInput(ctx context.C
 				return it, err
 			}
 			it.Subject = data
-		case "htmlBody":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("htmlBody"))
+		case "html":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("html"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HTMLBody = data
+			it.HTML = data
+		case "design":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("design"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Design = data
 		case "variables":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variables"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -7951,8 +8117,13 @@ func (ec *executionContext) _EmailTemplate(ctx context.Context, sel ast.Selectio
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "htmlBody":
-			out.Values[i] = ec._EmailTemplate_htmlBody(ctx, field, obj)
+		case "html":
+			out.Values[i] = ec._EmailTemplate_html(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "design":
+			out.Values[i] = ec._EmailTemplate_design(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8697,6 +8868,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_findManyUserForAdmin(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findOneUserForAdmin":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findOneUserForAdmin(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

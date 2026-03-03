@@ -15,6 +15,7 @@ import (
 type UserService interface {
 	GetUser(ctx context.Context, id uint) (*maindb.User, error)
 	FindManyUserForAdmin(ctx context.Context, page model.PageInput, search *model.UserSearchInput) ([]maindb.User, int64, error)
+	FindOneUserForAdmin(ctx context.Context, id uint) (*maindb.User, error)
 	Modify(ctx context.Context, input model.ModifyUserInput) (*maindb.User, error)
 	CheckPassword(ctx context.Context, password string) (bool, error)
 	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (bool, error)
@@ -51,6 +52,15 @@ func (s *userService) GetUser(ctx context.Context, id uint) (*maindb.User, error
 
 func (s *userService) FindManyUserForAdmin(ctx context.Context, page model.PageInput, search *model.UserSearchInput) ([]maindb.User, int64, error) {
 	return s.repo.FindAll(ctx, page.Page, page.Size, search)
+}
+
+func (s *userService) FindOneUserForAdmin(ctx context.Context, id uint) (*maindb.User, error) {
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, fnError.NewNotFound("사용자 정보를 찾을 수 없습니다.")
+	}
+
+	return user, nil
 }
 
 func (s *userService) CheckPassword(ctx context.Context, password string) (bool, error) {

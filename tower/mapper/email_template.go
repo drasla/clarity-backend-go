@@ -10,15 +10,24 @@ func EmailTemplateToGraphQL(emailTemplate *maindb.EmailTemplate) *model.EmailTem
 		return nil
 	}
 
+	var variables, description *string
+	if emailTemplate.Variables != "" {
+		variables = new(emailTemplate.Variables)
+	}
+	if emailTemplate.Description != "" {
+		description = new(emailTemplate.Description)
+	}
+
 	return &model.EmailTemplate{
 		ID:           int(emailTemplate.ID),
 		CreatedAt:    emailTemplate.CreatedAt,
 		UpdatedAt:    emailTemplate.UpdatedAt,
 		TemplateCode: emailTemplate.TemplateCode,
 		Subject:      emailTemplate.Subject,
-		HTMLBody:     emailTemplate.HTMLBody,
-		Variables:    &emailTemplate.Variables,
-		Description:  &emailTemplate.Description,
+		HTML:         emailTemplate.HTML,
+		Design:       emailTemplate.Design,
+		Variables:    variables,
+		Description:  description,
 	}
 }
 

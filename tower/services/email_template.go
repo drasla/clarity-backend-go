@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"tower/graph/model"
 	"tower/model/maindb"
 	"tower/pkg/fnError"
@@ -39,7 +40,8 @@ func (s *emailTemplateService) Create(ctx context.Context, input model.CreateEma
 	template := &maindb.EmailTemplate{
 		TemplateCode: input.TemplateCode,
 		Subject:      input.Subject,
-		HTMLBody:     input.HTMLBody,
+		HTML:         input.HTML,
+		Design:       input.Design,
 	}
 
 	if input.Variables != nil {
@@ -50,7 +52,10 @@ func (s *emailTemplateService) Create(ctx context.Context, input model.CreateEma
 	}
 
 	if err := s.repo.Create(ctx, template); err != nil {
-		return nil, fnError.NewInternalError(err, "이메일 템플릿 생성 중 오류가 발생했습니다.")
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return nil, fnError.NewConflict("이미 존재하는 템플릿 코드입니다.")
+		}
+		return nil, fnError.NewInternalError(err, "템플릿 생성 중 오류가 발생했습니다.")
 	}
 
 	return template, nil
@@ -74,37 +79,18 @@ func (s *emailTemplateService) FindMany(ctx context.Context, page model.PageInpu
 func (s *emailTemplateService) Update(ctx context.Context, id int, input model.ModifyEmailTemplateInput) (*maindb.EmailTemplate, error) {
 	template, err := s.repo.FindById(ctx, id)
 	if err != nil {
-		return nil, fnError.NewNotFound("수정할 이메일 템플릿을 찾을 수 없습니다.")
+		return nil, fnError.NewNotFound("수정할 템플릿을 찾을 수 없습니다.")
 	}
 
-	if input.TemplateCode != nil && *input.TemplateCode != template.TemplateCode {
-		existing, err := s.repo.FindByCode(ctx, *input.TemplateCode)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fnError.NewInternalError(err, "템플릿 코드 중복 검사 중 오류가 발생했습니다.")
-		}
-		if existing != nil {
-			return nil, fnError.NewBadRequest("변경하려는 템플릿 코드가 이미 존재합니다.")
-		}
-		template.TemplateCode = *input.TemplateCode
-	}
-
-	if input.Subject != nil {
-		template.Subject = *input.Subject
-	}
-	if input.HTMLBody != nil {
-		template.HTMLBody = *input.HTMLBody
-	}
-	if input.Variables != nil {
-		template.Variables = *input.Variables
-	}
-	if input.Description != nil {
-		template.Description = *input.Description
-	}
+	// 헬퍼 함수로 부분 업데이트
+	mapModifyInputToTemplate(template, input)
 
 	if err := s.repo.Update(ctx, template); err != nil {
-		return nil, fnError.NewInternalError(err, "이메일 템플릿 수정 중 오류가 발생했습니다.")
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return nil, fnError.NewConflict("이미 사용 중인 템플릿 코드입니다.")
+		}
+		return nil, fnError.NewInternalError(err, "템플릿 수정 중 오류가 발생했습니다.")
 	}
-
 	return template, nil
 }
 
@@ -119,4 +105,25 @@ func (s *emailTemplateService) Delete(ctx context.Context, id int) (bool, error)
 	}
 
 	return true, nil
+}
+
+func mapModifyInputToTemplate(template *maindb.EmailTemplate, input model.ModifyEmailTemplateInput) {
+	if input.TemplateCode != nil {
+		template.TemplateCode = *input.TemplateCode
+	}
+	if input.Subject != nil {
+		template.Subject = *input.Subject
+	}
+	if input.HTML != nil {
+		template.HTML = *input.HTML
+	}
+	if input.Design != nil {
+		template.Design = *input.Design
+	}
+	if input.Variables != nil {
+		template.Variables = *input.Variables
+	}
+	if input.Description != nil {
+		template.Description = *input.Description
+	}
 }

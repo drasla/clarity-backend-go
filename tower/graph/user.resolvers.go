@@ -62,3 +62,18 @@ func (r *queryResolver) FindManyUserForAdmin(ctx context.Context, page model.Pag
 		List:  mapper.UsersToGraphQL(users),
 	}, nil
 }
+
+// FindOneUserForAdmin is the resolver for the findOneUserForAdmin field.
+func (r *queryResolver) FindOneUserForAdmin(ctx context.Context, id string) (*model.User, error) {
+	parsedID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return nil, fnError.NewBadRequest("유효하지 않은 사용자 ID 형식입니다.")
+	}
+
+	user, err := r.UserService.FindOneUserForAdmin(ctx, uint(parsedID))
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.UserToGraphQL(user), nil
+}

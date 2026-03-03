@@ -64,6 +64,7 @@ input ModifyUserForAdminInput {
 extend type Query {
     checkPassword(password: String!): Boolean! @auth
     findManyUserForAdmin(page: PageInput!, search: UserSearchInput): UserList! @admin
+    findOneUserForAdmin(id: ID!): User! @admin
 }
 
 extend type Mutation {

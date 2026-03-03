@@ -4,7 +4,8 @@ type EmailTemplate {
     updatedAt: Time!
     templateCode: String!
     subject: String!
-    htmlBody: String!
+    html: String!
+    design: String!
     variables: String
     description: String
 }
@@ -23,7 +24,8 @@ input EmailTemplateSearchInput {
 input CreateEmailTemplateInput {
     templateCode: String!
     subject: String!
-    htmlBody: String!
+    html: String!
+    design: String!
     variables: String
     description: String
 }
@@ -31,7 +33,8 @@ input CreateEmailTemplateInput {
 input ModifyEmailTemplateInput {
     templateCode: String
     subject: String
-    htmlBody: String
+    html: String
+    design: String
     variables: String
     description: String
 }

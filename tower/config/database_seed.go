@@ -12,7 +12,7 @@ func seedData(db *gorm.DB) {
 		{
 			TemplateCode: "INQUIRY_REPLY",
 			Subject:      "[안내] 문의하신 내용에 대한 답변이 등록되었습니다.",
-			HTMLBody: `
+			HTML: `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
 	<h2>문의하신 내용에 대한 답변입니다.</h2>
 	<hr />
@@ -21,6 +21,7 @@ func seedData(db *gorm.DB) {
 		<p>{{.Answer}}</p>
 	</div>
 </div>`,
+			Design:      "{}",
 			Variables:   `["Inquiry.Title", "Inquiry.Category", "Answer"]`,
 			Description: "1:1 문의 답변 시 발송되는 필수 기본 템플릿입니다.",
 		},

@@ -54,11 +54,8 @@ func (r *emailTemplateRepository) FindAll(ctx context.Context, page, size int, s
 	query := r.db.WithContext(ctx).Model(&maindb.EmailTemplate{})
 
 	if search != nil && search.Keyword != nil && *search.Keyword != "" {
-		keyword := "%" + *search.Keyword + "%"
-		query = query.Where(
-			"template_code LIKE ? OR subject LIKE ? OR description LIKE ?",
-			keyword, keyword, keyword,
-		)
+		k := "%" + *search.Keyword + "%"
+		query = query.Where("(template_code LIKE ? OR subject LIKE ? OR description LIKE ?)", k, k, k)
 	}
 
 	query.Count(&total)

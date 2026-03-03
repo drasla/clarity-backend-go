@@ -244,7 +244,7 @@ func (s *inquiryService) Answer(ctx context.Context, id int, input model.AnswerI
 		}
 
 		subject, _ := fnMailer.CompileTemplate(tmpl.Subject, templateContext)
-		htmlBody, _ := fnMailer.CompileTemplate(tmpl.HTMLBody, templateContext)
+		htmlBody, _ := fnMailer.CompileTemplate(tmpl.HTML, templateContext)
 
 		_ = fnMailer.Send("INQUIRY_REPLY", inq.Email, subject, htmlBody)
 	}(inquiry, input.Answer)

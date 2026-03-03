@@ -45,7 +45,8 @@ type ChangePasswordInput struct {
 type CreateEmailTemplateInput struct {
 	TemplateCode string  `json:"templateCode"`
 	Subject      string  `json:"subject"`
-	HTMLBody     string  `json:"htmlBody"`
+	HTML         string  `json:"html"`
+	Design       string  `json:"design"`
 	Variables    *string `json:"variables,omitempty"`
 	Description  *string `json:"description,omitempty"`
 }
@@ -67,7 +68,8 @@ type EmailTemplate struct {
 	UpdatedAt    time.Time `json:"updatedAt"`
 	TemplateCode string    `json:"templateCode"`
 	Subject      string    `json:"subject"`
-	HTMLBody     string    `json:"htmlBody"`
+	HTML         string    `json:"html"`
+	Design       string    `json:"design"`
 	Variables    *string   `json:"variables,omitempty"`
 	Description  *string   `json:"description,omitempty"`
 }
@@ -143,7 +145,8 @@ type InquirySearchInput struct {
 type ModifyEmailTemplateInput struct {
 	TemplateCode *string `json:"templateCode,omitempty"`
 	Subject      *string `json:"subject,omitempty"`
-	HTMLBody     *string `json:"htmlBody,omitempty"`
+	HTML         *string `json:"html,omitempty"`
+	Design       *string `json:"design,omitempty"`
 	Variables    *string `json:"variables,omitempty"`
 	Description  *string `json:"description,omitempty"`
 }

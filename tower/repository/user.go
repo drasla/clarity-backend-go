@@ -100,13 +100,17 @@ func (r *userRepository) FindAll(ctx context.Context, page, size int, search *mo
 			query = query.Where("role = ?", *search.Role)
 		}
 		if search.Keyword != nil && *search.Keyword != "" {
-			query = query.Where("name LIKE ? OR phoneNumber LIKE ? OR landlineNumber LIKE ?", "%"+*search.Keyword+"%", "%"+*search.Keyword+"%", "%"+*search.Keyword+"%")
+			k := "%" + *search.Keyword + "%"
+			query = query.Where("(name LIKE ? OR phone_number LIKE ? OR landline_number LIKE ?)", k, k, k)
 		}
 	}
 
-	query.Count(&total)
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
 	offset := (page - 1) * size
-	err := query.Preload("Attachments").Order("created_at DESC").Offset(offset).Limit(size).Find(&users).Error
+	err := query.Order("created_at DESC").Offset(offset).Limit(size).Find(&users).Error
 
 	return users, total, err
 }
