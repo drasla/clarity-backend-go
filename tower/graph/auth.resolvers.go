@@ -8,8 +8,8 @@ package graph
 import (
 	"context"
 	"tower/graph/model"
+	fnMapper2 "tower/mapper"
 	"tower/model/maindb"
-	"tower/pkg/fnMapper"
 	"tower/pkg/fnMiddleware"
 	service "tower/services"
 )
@@ -71,7 +71,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInp
 		return nil, err
 	}
 
-	return fnMapper.UserToGraphQL(user), nil
+	return fnMapper2.UserToGraphQL(user), nil
 }
 
 // Login is the resolver for the login field.
@@ -81,7 +81,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 		return nil, err
 	}
 
-	return fnMapper.TokenToGraphQL(accessToken, refreshToken), nil
+	return fnMapper2.TokenToGraphQL(accessToken, refreshToken), nil
 }
 
 // RefreshToken is the resolver for the refreshToken field.
@@ -90,7 +90,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, token string) (*mod
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.TokenToGraphQL(newAccess, newRefresh), nil
+	return fnMapper2.TokenToGraphQL(newAccess, newRefresh), nil
 }
 
 // Withdraw is the resolver for the withdraw field.
@@ -113,5 +113,5 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 		return nil, err
 	}
 
-	return fnMapper.UserToGraphQL(user), nil
+	return fnMapper2.UserToGraphQL(user), nil
 }

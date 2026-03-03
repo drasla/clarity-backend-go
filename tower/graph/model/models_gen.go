@@ -37,6 +37,11 @@ type BusinessInput struct {
 	BizLicenseURL *string `json:"bizLicenseURL,omitempty"`
 }
 
+type ChangePasswordInput struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
 type CreateEmailTemplateInput struct {
 	TemplateCode string  `json:"templateCode"`
 	Subject      string  `json:"subject"`
@@ -153,6 +158,45 @@ type ModifyInquiryInput struct {
 	Attachments []*FileInput     `json:"attachments,omitempty"`
 }
 
+type ModifyUserForAdminInput struct {
+	Role           *UserRole   `json:"role,omitempty"`
+	Type           *UserType   `json:"type,omitempty"`
+	Status         *UserStatus `json:"status,omitempty"`
+	Password       *string     `json:"password,omitempty"`
+	Name           *string     `json:"name,omitempty"`
+	Email          *string     `json:"email,omitempty"`
+	PhoneNumber    *string     `json:"phoneNumber,omitempty"`
+	LandlineNumber *string     `json:"landlineNumber,omitempty"`
+	AgreeEmail     *bool       `json:"agreeEmail,omitempty"`
+	AgreeSms       *bool       `json:"agreeSms,omitempty"`
+	BizRegNumber   *string     `json:"bizRegNumber,omitempty"`
+	BizCeo         *string     `json:"bizCeo,omitempty"`
+	BizType        *string     `json:"bizType,omitempty"`
+	BizItem        *string     `json:"bizItem,omitempty"`
+	BizZipCode     *string     `json:"bizZipCode,omitempty"`
+	BizAddress1    *string     `json:"bizAddress1,omitempty"`
+	BizAddress2    *string     `json:"bizAddress2,omitempty"`
+	BizLicenseURL  *string     `json:"bizLicenseUrl,omitempty"`
+}
+
+type ModifyUserInput struct {
+	Name           *string   `json:"name,omitempty"`
+	Email          *string   `json:"email,omitempty"`
+	Type           *UserType `json:"type,omitempty"`
+	PhoneNumber    *string   `json:"phoneNumber,omitempty"`
+	LandlineNumber *string   `json:"landlineNumber,omitempty"`
+	AgreeEmail     *bool     `json:"agreeEmail,omitempty"`
+	AgreeSms       *bool     `json:"agreeSms,omitempty"`
+	BizRegNumber   *string   `json:"bizRegNumber,omitempty"`
+	BizCeo         *string   `json:"bizCeo,omitempty"`
+	BizType        *string   `json:"bizType,omitempty"`
+	BizItem        *string   `json:"bizItem,omitempty"`
+	BizZipCode     *string   `json:"bizZipCode,omitempty"`
+	BizAddress1    *string   `json:"bizAddress1,omitempty"`
+	BizAddress2    *string   `json:"bizAddress2,omitempty"`
+	BizLicenseURL  *string   `json:"bizLicenseUrl,omitempty"`
+}
+
 type Mutation struct {
 }
 
@@ -196,6 +240,20 @@ type User struct {
 	AgreeEmail     bool          `json:"agreeEmail"`
 	AgreeSms       bool          `json:"agreeSMS"`
 	BizInfo        *BusinessInfo `json:"bizInfo,omitempty"`
+}
+
+type UserList struct {
+	Total int     `json:"total"`
+	Size  int     `json:"size"`
+	Page  int     `json:"page"`
+	List  []*User `json:"list"`
+}
+
+type UserSearchInput struct {
+	Keyword *string     `json:"keyword,omitempty"`
+	Type    *UserType   `json:"type,omitempty"`
+	Status  *UserStatus `json:"status,omitempty"`
+	Role    *UserRole   `json:"role,omitempty"`
 }
 
 type InquiryCategory string

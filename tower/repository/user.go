@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"tower/graph/model"
 	"tower/model/maindb"
 
 	"gorm.io/gorm"
@@ -17,6 +18,7 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id uint) (*maindb.User, error)
 	FindByEmail(ctx context.Context, email string) (*maindb.User, error)
 	FindByUsername(ctx context.Context, username string) (*maindb.User, error)
+	FindAll(ctx context.Context, page, size int, search *model.UserSearchInput) ([]maindb.User, int64, error)
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	Update(ctx context.Context, user *maindb.User) error
 	Withdraw(ctx context.Context, userID uint) error
@@ -79,6 +81,34 @@ func (r *userRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 		Where("email = ?", email).
 		Count(&count).Error
 	return count > 0, err
+}
+
+func (r *userRepository) FindAll(ctx context.Context, page, size int, search *model.UserSearchInput) ([]maindb.User, int64, error) {
+	var users []maindb.User
+	var total int64
+
+	query := r.db.WithContext(ctx).Model(&maindb.User{})
+
+	if search != nil {
+		if search.Status != nil {
+			query = query.Where("status = ?", *search.Status)
+		}
+		if search.Type != nil {
+			query = query.Where("type = ?", *search.Type)
+		}
+		if search.Role != nil && *search.Role != "" {
+			query = query.Where("role = ?", *search.Role)
+		}
+		if search.Keyword != nil && *search.Keyword != "" {
+			query = query.Where("name LIKE ? OR phoneNumber LIKE ? OR landlineNumber LIKE ?", "%"+*search.Keyword+"%", "%"+*search.Keyword+"%", "%"+*search.Keyword+"%")
+		}
+	}
+
+	query.Count(&total)
+	offset := (page - 1) * size
+	err := query.Preload("Attachments").Order("created_at DESC").Offset(offset).Limit(size).Find(&users).Error
+
+	return users, total, err
 }
 
 func (r *userRepository) Update(ctx context.Context, user *maindb.User) error {

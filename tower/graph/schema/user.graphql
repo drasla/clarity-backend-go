@@ -1,0 +1,74 @@
+input ModifyUserInput {
+    name: String
+    email: String
+    type: UserType
+    phoneNumber: String
+    landlineNumber: String
+
+    agreeEmail: Boolean
+    agreeSms: Boolean
+
+    bizRegNumber: String
+    bizCeo: String
+    bizType: String
+    bizItem: String
+    bizZipCode: String
+    bizAddress1: String
+    bizAddress2: String
+    bizLicenseUrl: String
+}
+
+input ChangePasswordInput {
+    oldPassword: String!
+    newPassword: String!
+}
+
+input UserSearchInput {
+    keyword: String
+    type: UserType
+    status: UserStatus
+    role: UserRole
+}
+
+type UserList {
+    total: Int!
+    size: Int!
+    page: Int!
+    list: [User!]!
+}
+
+input ModifyUserForAdminInput {
+    role: UserRole
+    type: UserType
+    status: UserStatus
+
+    password: String
+    name: String
+    email: String
+    phoneNumber: String
+    landlineNumber: String
+
+    agreeEmail: Boolean
+    agreeSms: Boolean
+
+    bizRegNumber: String
+    bizCeo: String
+    bizType: String
+    bizItem: String
+    bizZipCode: String
+    bizAddress1: String
+    bizAddress2: String
+    bizLicenseUrl: String
+}
+
+extend type Query {
+    checkPassword(password: String!): Boolean! @auth
+    findManyUserForAdmin(page: PageInput!, search: UserSearchInput): UserList! @admin
+}
+
+extend type Mutation {
+    modifyUser(input: ModifyUserInput!): User! @auth
+    changePassword(input: ChangePasswordInput!): Boolean! @auth
+    modifyUserForAdmin(id: ID!, input: ModifyUserForAdminInput!): User! @admin
+}
+

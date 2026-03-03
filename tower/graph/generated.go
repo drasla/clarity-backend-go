@@ -123,6 +123,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AnswerInquiry       func(childComplexity int, id int, input model.AnswerInquiryInput) int
+		ChangePassword      func(childComplexity int, input model.ChangePasswordInput) int
 		ConfirmVerification func(childComplexity int, target string, typeArg model.VerificationType, code string) int
 		CreateEmailTemplate func(childComplexity int, input model.CreateEmailTemplateInput) int
 		CreateInquiry       func(childComplexity int, input model.CreateInquiryInput) int
@@ -132,6 +133,8 @@ type ComplexityRoot struct {
 		Login               func(childComplexity int, username string, password string) int
 		ModifyEmailTemplate func(childComplexity int, id int, input model.ModifyEmailTemplateInput) int
 		ModifyInquiry       func(childComplexity int, id int, input model.ModifyInquiryInput, password *string) int
+		ModifyUser          func(childComplexity int, input model.ModifyUserInput) int
+		ModifyUserForAdmin  func(childComplexity int, id string, input model.ModifyUserForAdminInput) int
 		RefreshToken        func(childComplexity int, token string) int
 		Register            func(childComplexity int, input model.RegisterInput) int
 		RequestVerification func(childComplexity int, target string, typeArg model.VerificationType) int
@@ -140,11 +143,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		CheckPassword             func(childComplexity int, password string) int
 		Empty                     func(childComplexity int) int
 		FindManyEmailTemplates    func(childComplexity int, page model.PageInput, search *model.EmailTemplateSearchInput) int
 		FindManyInquiriesForAdmin func(childComplexity int, page model.PageInput, search *model.InquirySearchInput) int
 		FindManyMyInquiries       func(childComplexity int, page model.PageInput) int
 		FindManyPublicInquiries   func(childComplexity int, page model.PageInput, search *model.InquirySearchInput) int
+		FindManyUserForAdmin      func(childComplexity int, page model.PageInput, search *model.UserSearchInput) int
 		FindOneEmailTemplateByID  func(childComplexity int, id int) int
 		FindOneInquiryByID        func(childComplexity int, id int, password *string) int
 		Me                        func(childComplexity int) int
@@ -171,6 +176,13 @@ type ComplexityRoot struct {
 		UpdatedAt      func(childComplexity int) int
 		Username       func(childComplexity int) int
 	}
+
+	UserList struct {
+		List  func(childComplexity int) int
+		Page  func(childComplexity int) int
+		Size  func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
 }
 
 type MutationResolver interface {
@@ -189,6 +201,9 @@ type MutationResolver interface {
 	ModifyInquiry(ctx context.Context, id int, input model.ModifyInquiryInput, password *string) (*model.Inquiry, error)
 	DeleteInquiry(ctx context.Context, id int, password *string) (bool, error)
 	AnswerInquiry(ctx context.Context, id int, input model.AnswerInquiryInput) (*model.Inquiry, error)
+	ModifyUser(ctx context.Context, input model.ModifyUserInput) (*model.User, error)
+	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (bool, error)
+	ModifyUserForAdmin(ctx context.Context, id string, input model.ModifyUserForAdminInput) (*model.User, error)
 }
 type QueryResolver interface {
 	Empty(ctx context.Context) (*string, error)
@@ -199,6 +214,8 @@ type QueryResolver interface {
 	FindManyPublicInquiries(ctx context.Context, page model.PageInput, search *model.InquirySearchInput) (*model.InquiryList, error)
 	FindManyMyInquiries(ctx context.Context, page model.PageInput) (*model.InquiryList, error)
 	FindManyInquiriesForAdmin(ctx context.Context, page model.PageInput, search *model.InquirySearchInput) (*model.InquiryList, error)
+	CheckPassword(ctx context.Context, password string) (bool, error)
+	FindManyUserForAdmin(ctx context.Context, page model.PageInput, search *model.UserSearchInput) (*model.UserList, error)
 }
 
 type executableSchema struct {
@@ -538,6 +555,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.AnswerInquiry(childComplexity, args["id"].(int), args["input"].(model.AnswerInquiryInput)), true
+	case "Mutation.changePassword":
+		if e.complexity.Mutation.ChangePassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_changePassword_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ChangePassword(childComplexity, args["input"].(model.ChangePasswordInput)), true
 	case "Mutation.confirmVerification":
 		if e.complexity.Mutation.ConfirmVerification == nil {
 			break
@@ -632,6 +660,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.ModifyInquiry(childComplexity, args["id"].(int), args["input"].(model.ModifyInquiryInput), args["password"].(*string)), true
+	case "Mutation.modifyUser":
+		if e.complexity.Mutation.ModifyUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_modifyUser_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ModifyUser(childComplexity, args["input"].(model.ModifyUserInput)), true
+	case "Mutation.modifyUserForAdmin":
+		if e.complexity.Mutation.ModifyUserForAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_modifyUserForAdmin_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ModifyUserForAdmin(childComplexity, args["id"].(string), args["input"].(model.ModifyUserForAdminInput)), true
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
 			break
@@ -683,6 +733,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.Withdraw(childComplexity), true
 
+	case "Query.checkPassword":
+		if e.complexity.Query.CheckPassword == nil {
+			break
+		}
+
+		args, err := ec.field_Query_checkPassword_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CheckPassword(childComplexity, args["password"].(string)), true
 	case "Query._empty":
 		if e.complexity.Query.Empty == nil {
 			break
@@ -733,6 +794,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.FindManyPublicInquiries(childComplexity, args["page"].(model.PageInput), args["search"].(*model.InquirySearchInput)), true
+	case "Query.findManyUserForAdmin":
+		if e.complexity.Query.FindManyUserForAdmin == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findManyUserForAdmin_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindManyUserForAdmin(childComplexity, args["page"].(model.PageInput), args["search"].(*model.UserSearchInput)), true
 	case "Query.findOneEmailTemplateById":
 		if e.complexity.Query.FindOneEmailTemplateByID == nil {
 			break
@@ -860,6 +932,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.Username(childComplexity), true
 
+	case "UserList.list":
+		if e.complexity.UserList.List == nil {
+			break
+		}
+
+		return e.complexity.UserList.List(childComplexity), true
+	case "UserList.page":
+		if e.complexity.UserList.Page == nil {
+			break
+		}
+
+		return e.complexity.UserList.Page(childComplexity), true
+	case "UserList.size":
+		if e.complexity.UserList.Size == nil {
+			break
+		}
+
+		return e.complexity.UserList.Size(childComplexity), true
+	case "UserList.total":
+		if e.complexity.UserList.Total == nil {
+			break
+		}
+
+		return e.complexity.UserList.Total(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -870,6 +967,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAnswerInquiryInput,
 		ec.unmarshalInputBusinessInput,
+		ec.unmarshalInputChangePasswordInput,
 		ec.unmarshalInputCreateEmailTemplateInput,
 		ec.unmarshalInputCreateInquiryInput,
 		ec.unmarshalInputEmailTemplateSearchInput,
@@ -877,8 +975,11 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputInquirySearchInput,
 		ec.unmarshalInputModifyEmailTemplateInput,
 		ec.unmarshalInputModifyInquiryInput,
+		ec.unmarshalInputModifyUserForAdminInput,
+		ec.unmarshalInputModifyUserInput,
 		ec.unmarshalInputPageInput,
 		ec.unmarshalInputRegisterInput,
+		ec.unmarshalInputUserSearchInput,
 	)
 	first := true
 
@@ -975,7 +1076,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/auth.graphql" "schema/common.graphql" "schema/email_template.graphql" "schema/file.graphql" "schema/inquiry.graphql"
+//go:embed "schema/auth.graphql" "schema/common.graphql" "schema/email_template.graphql" "schema/file.graphql" "schema/inquiry.graphql" "schema/user.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -992,6 +1093,7 @@ var sources = []*ast.Source{
 	{Name: "schema/email_template.graphql", Input: sourceData("schema/email_template.graphql"), BuiltIn: false},
 	{Name: "schema/file.graphql", Input: sourceData("schema/file.graphql"), BuiltIn: false},
 	{Name: "schema/inquiry.graphql", Input: sourceData("schema/inquiry.graphql"), BuiltIn: false},
+	{Name: "schema/user.graphql", Input: sourceData("schema/user.graphql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1012,6 +1114,17 @@ func (ec *executionContext) field_Mutation_answerInquiry_args(ctx context.Contex
 		return nil, err
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNChangePasswordInput2towerᚋgraphᚋmodelᚐChangePasswordInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1138,6 +1251,33 @@ func (ec *executionContext) field_Mutation_modifyInquiry_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_modifyUserForAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNModifyUserForAdminInput2towerᚋgraphᚋmodelᚐModifyUserForAdminInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_modifyUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNModifyUserInput2towerᚋgraphᚋmodelᚐModifyUserInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1203,6 +1343,17 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_checkPassword_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "password", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["password"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_findManyEmailTemplates_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1255,6 +1406,22 @@ func (ec *executionContext) field_Query_findManyPublicInquiries_args(ctx context
 	}
 	args["page"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "search", ec.unmarshalOInquirySearchInput2ᚖtowerᚋgraphᚋmodelᚐInquirySearchInput)
+	if err != nil {
+		return nil, err
+	}
+	args["search"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findManyUserForAdmin_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "page", ec.unmarshalNPageInput2towerᚋgraphᚋmodelᚐPageInput)
+	if err != nil {
+		return nil, err
+	}
+	args["page"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "search", ec.unmarshalOUserSearchInput2ᚖtowerᚋgraphᚋmodelᚐUserSearchInput)
 	if err != nil {
 		return nil, err
 	}
@@ -3691,6 +3858,228 @@ func (ec *executionContext) fieldContext_Mutation_answerInquiry(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_modifyUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_modifyUser,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().ModifyUser(ctx, fc.Args["input"].(model.ModifyUserInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Auth == nil {
+					var zeroVal *model.User
+					return zeroVal, errors.New("directive auth is not implemented")
+				}
+				return ec.directives.Auth(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNUser2ᚖtowerᚋgraphᚋmodelᚐUser,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_modifyUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
+			case "landlineNumber":
+				return ec.fieldContext_User_landlineNumber(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "agreeEmail":
+				return ec.fieldContext_User_agreeEmail(ctx, field)
+			case "agreeSMS":
+				return ec.fieldContext_User_agreeSMS(ctx, field)
+			case "bizInfo":
+				return ec.fieldContext_User_bizInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_modifyUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_changePassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_changePassword,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().ChangePassword(ctx, fc.Args["input"].(model.ChangePasswordInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Auth == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive auth is not implemented")
+				}
+				return ec.directives.Auth(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_changePassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_changePassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_modifyUserForAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_modifyUserForAdmin,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().ModifyUserForAdmin(ctx, fc.Args["id"].(string), fc.Args["input"].(model.ModifyUserForAdminInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.User
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNUser2ᚖtowerᚋgraphᚋmodelᚐUser,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_modifyUserForAdmin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
+			case "landlineNumber":
+				return ec.fieldContext_User_landlineNumber(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "agreeEmail":
+				return ec.fieldContext_User_agreeEmail(ctx, field)
+			case "agreeSMS":
+				return ec.fieldContext_User_agreeSMS(ctx, field)
+			case "bizInfo":
+				return ec.fieldContext_User_bizInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_modifyUserForAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query__empty(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4172,6 +4561,124 @@ func (ec *executionContext) fieldContext_Query_findManyInquiriesForAdmin(ctx con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_findManyInquiriesForAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_checkPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_checkPassword,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().CheckPassword(ctx, fc.Args["password"].(string))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Auth == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive auth is not implemented")
+				}
+				return ec.directives.Auth(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_checkPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_checkPassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_findManyUserForAdmin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_findManyUserForAdmin,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().FindManyUserForAdmin(ctx, fc.Args["page"].(model.PageInput), fc.Args["search"].(*model.UserSearchInput))
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Admin == nil {
+					var zeroVal *model.UserList
+					return zeroVal, errors.New("directive admin is not implemented")
+				}
+				return ec.directives.Admin(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNUserList2ᚖtowerᚋgraphᚋmodelᚐUserList,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_findManyUserForAdmin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_UserList_total(ctx, field)
+			case "size":
+				return ec.fieldContext_UserList_size(ctx, field)
+			case "page":
+				return ec.fieldContext_UserList_page(ctx, field)
+			case "list":
+				return ec.fieldContext_UserList_list(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserList", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_findManyUserForAdmin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4763,6 +5270,152 @@ func (ec *executionContext) fieldContext_User_bizInfo(_ context.Context, field g
 				return ec.fieldContext_BusinessInfo_bizLicenseURL(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BusinessInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserList_total(ctx context.Context, field graphql.CollectedField, obj *model.UserList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UserList_total,
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UserList_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserList_size(ctx context.Context, field graphql.CollectedField, obj *model.UserList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UserList_size,
+		func(ctx context.Context) (any, error) {
+			return obj.Size, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UserList_size(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserList_page(ctx context.Context, field graphql.CollectedField, obj *model.UserList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UserList_page,
+		func(ctx context.Context) (any, error) {
+			return obj.Page, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UserList_page(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserList_list(ctx context.Context, field graphql.CollectedField, obj *model.UserList) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_UserList_list,
+		func(ctx context.Context) (any, error) {
+			return obj.List, nil
+		},
+		nil,
+		ec.marshalNUser2ᚕᚖtowerᚋgraphᚋmodelᚐUserᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_UserList_list(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserList",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_User_phoneNumber(ctx, field)
+			case "landlineNumber":
+				return ec.fieldContext_User_landlineNumber(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "agreeEmail":
+				return ec.fieldContext_User_agreeEmail(ctx, field)
+			case "agreeSMS":
+				return ec.fieldContext_User_agreeSMS(ctx, field)
+			case "bizInfo":
+				return ec.fieldContext_User_bizInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -6324,6 +6977,40 @@ func (ec *executionContext) unmarshalInputBusinessInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Context, obj any) (model.ChangePasswordInput, error) {
+	var it model.ChangePasswordInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"oldPassword", "newPassword"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "oldPassword":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oldPassword"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OldPassword = data
+		case "newPassword":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NewPassword = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateEmailTemplateInput(ctx context.Context, obj any) (model.CreateEmailTemplateInput, error) {
 	var it model.CreateEmailTemplateInput
 	asMap := map[string]any{}
@@ -6709,6 +7396,277 @@ func (ec *executionContext) unmarshalInputModifyInquiryInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputModifyUserForAdminInput(ctx context.Context, obj any) (model.ModifyUserForAdminInput, error) {
+	var it model.ModifyUserForAdminInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"role", "type", "status", "password", "name", "email", "phoneNumber", "landlineNumber", "agreeEmail", "agreeSms", "bizRegNumber", "bizCeo", "bizType", "bizItem", "bizZipCode", "bizAddress1", "bizAddress2", "bizLicenseUrl"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			data, err := ec.unmarshalOUserRole2ᚖtowerᚋgraphᚋmodelᚐUserRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Role = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOUserType2ᚖtowerᚋgraphᚋmodelᚐUserType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOUserStatus2ᚖtowerᚋgraphᚋmodelᚐUserStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "password":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "phoneNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PhoneNumber = data
+		case "landlineNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("landlineNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LandlineNumber = data
+		case "agreeEmail":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("agreeEmail"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AgreeEmail = data
+		case "agreeSms":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("agreeSms"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AgreeSms = data
+		case "bizRegNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizRegNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizRegNumber = data
+		case "bizCeo":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizCeo"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizCeo = data
+		case "bizType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizType"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizType = data
+		case "bizItem":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizItem"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizItem = data
+		case "bizZipCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizZipCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizZipCode = data
+		case "bizAddress1":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizAddress1"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizAddress1 = data
+		case "bizAddress2":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizAddress2"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizAddress2 = data
+		case "bizLicenseUrl":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizLicenseUrl"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizLicenseURL = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputModifyUserInput(ctx context.Context, obj any) (model.ModifyUserInput, error) {
+	var it model.ModifyUserInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "email", "type", "phoneNumber", "landlineNumber", "agreeEmail", "agreeSms", "bizRegNumber", "bizCeo", "bizType", "bizItem", "bizZipCode", "bizAddress1", "bizAddress2", "bizLicenseUrl"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOUserType2ᚖtowerᚋgraphᚋmodelᚐUserType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "phoneNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PhoneNumber = data
+		case "landlineNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("landlineNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LandlineNumber = data
+		case "agreeEmail":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("agreeEmail"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AgreeEmail = data
+		case "agreeSms":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("agreeSms"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AgreeSms = data
+		case "bizRegNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizRegNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizRegNumber = data
+		case "bizCeo":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizCeo"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizCeo = data
+		case "bizType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizType"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizType = data
+		case "bizItem":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizItem"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizItem = data
+		case "bizZipCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizZipCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizZipCode = data
+		case "bizAddress1":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizAddress1"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizAddress1 = data
+		case "bizAddress2":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizAddress2"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizAddress2 = data
+		case "bizLicenseUrl":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bizLicenseUrl"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BizLicenseURL = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPageInput(ctx context.Context, obj any) (model.PageInput, error) {
 	var it model.PageInput
 	asMap := map[string]any{}
@@ -6827,6 +7785,54 @@ func (ec *executionContext) unmarshalInputRegisterInput(ctx context.Context, obj
 				return it, err
 			}
 			it.BizInfo = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUserSearchInput(ctx context.Context, obj any) (model.UserSearchInput, error) {
+	var it model.UserSearchInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"keyword", "type", "status", "role"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "keyword":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyword"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Keyword = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOUserType2ᚖtowerᚋgraphᚋmodelᚐUserType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOUserStatus2ᚖtowerᚋgraphᚋmodelᚐUserStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			data, err := ec.unmarshalOUserRole2ᚖtowerᚋgraphᚋmodelᚐUserRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Role = data
 		}
 	}
 
@@ -7426,6 +8432,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "modifyUser":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_modifyUser(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "changePassword":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_changePassword(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "modifyUserForAdmin":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_modifyUserForAdmin(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7638,6 +8665,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "checkPassword":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_checkPassword(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findManyUserForAdmin":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findManyUserForAdmin(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -7788,6 +8859,60 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "bizInfo":
 			out.Values[i] = ec._User_bizInfo(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var userListImplementors = []string{"UserList"}
+
+func (ec *executionContext) _UserList(ctx context.Context, sel ast.SelectionSet, obj *model.UserList) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userListImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserList")
+		case "total":
+			out.Values[i] = ec._UserList_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "size":
+			out.Values[i] = ec._UserList_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "page":
+			out.Values[i] = ec._UserList_page(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "list":
+			out.Values[i] = ec._UserList_list(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8167,6 +9292,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNChangePasswordInput2towerᚋgraphᚋmodelᚐChangePasswordInput(ctx context.Context, v any) (model.ChangePasswordInput, error) {
+	res, err := ec.unmarshalInputChangePasswordInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateEmailTemplateInput2towerᚋgraphᚋmodelᚐCreateEmailTemplateInput(ctx context.Context, v any) (model.CreateEmailTemplateInput, error) {
 	res, err := ec.unmarshalInputCreateEmailTemplateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8472,6 +9602,16 @@ func (ec *executionContext) unmarshalNModifyInquiryInput2towerᚋgraphᚋmodel�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNModifyUserForAdminInput2towerᚋgraphᚋmodelᚐModifyUserForAdminInput(ctx context.Context, v any) (model.ModifyUserForAdminInput, error) {
+	res, err := ec.unmarshalInputModifyUserForAdminInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNModifyUserInput2towerᚋgraphᚋmodelᚐModifyUserInput(ctx context.Context, v any) (model.ModifyUserInput, error) {
+	res, err := ec.unmarshalInputModifyUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNPageInput2towerᚋgraphᚋmodelᚐPageInput(ctx context.Context, v any) (model.PageInput, error) {
 	res, err := ec.unmarshalInputPageInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8548,6 +9688,50 @@ func (ec *executionContext) marshalNUser2towerᚋgraphᚋmodelᚐUser(ctx contex
 	return ec._User(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNUser2ᚕᚖtowerᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUser2ᚖtowerᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNUser2ᚖtowerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -8556,6 +9740,20 @@ func (ec *executionContext) marshalNUser2ᚖtowerᚋgraphᚋmodelᚐUser(ctx con
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUserList2towerᚋgraphᚋmodelᚐUserList(ctx context.Context, sel ast.SelectionSet, v model.UserList) graphql.Marshaler {
+	return ec._UserList(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserList2ᚖtowerᚋgraphᚋmodelᚐUserList(ctx context.Context, sel ast.SelectionSet, v *model.UserList) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UserList(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUserRole2towerᚋgraphᚋmodelᚐUserRole(ctx context.Context, v any) (model.UserRole, error) {
@@ -9021,6 +10219,62 @@ func (ec *executionContext) marshalOUser2ᚖtowerᚋgraphᚋmodelᚐUser(ctx con
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserRole2ᚖtowerᚋgraphᚋmodelᚐUserRole(ctx context.Context, v any) (*model.UserRole, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.UserRole)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserRole2ᚖtowerᚋgraphᚋmodelᚐUserRole(ctx context.Context, sel ast.SelectionSet, v *model.UserRole) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOUserSearchInput2ᚖtowerᚋgraphᚋmodelᚐUserSearchInput(ctx context.Context, v any) (*model.UserSearchInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUserSearchInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOUserStatus2ᚖtowerᚋgraphᚋmodelᚐUserStatus(ctx context.Context, v any) (*model.UserStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.UserStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserStatus2ᚖtowerᚋgraphᚋmodelᚐUserStatus(ctx context.Context, sel ast.SelectionSet, v *model.UserStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOUserType2ᚖtowerᚋgraphᚋmodelᚐUserType(ctx context.Context, v any) (*model.UserType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.UserType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserType2ᚖtowerᚋgraphᚋmodelᚐUserType(ctx context.Context, sel ast.SelectionSet, v *model.UserType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

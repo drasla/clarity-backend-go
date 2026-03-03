@@ -1,4 +1,4 @@
-package fnMapper
+package mapper
 
 import (
 	"fmt"

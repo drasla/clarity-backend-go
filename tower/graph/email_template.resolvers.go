@@ -8,7 +8,7 @@ package graph
 import (
 	"context"
 	"tower/graph/model"
-	"tower/pkg/fnMapper"
+	"tower/mapper"
 )
 
 // CreateEmailTemplate is the resolver for the createEmailTemplate field.
@@ -17,7 +17,7 @@ func (r *mutationResolver) CreateEmailTemplate(ctx context.Context, input model.
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.EmailTemplateToGraphQL(template), nil
+	return mapper.EmailTemplateToGraphQL(template), nil
 }
 
 // ModifyEmailTemplate is the resolver for the modifyEmailTemplate field.
@@ -26,7 +26,7 @@ func (r *mutationResolver) ModifyEmailTemplate(ctx context.Context, id int, inpu
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.EmailTemplateToGraphQL(template), nil
+	return mapper.EmailTemplateToGraphQL(template), nil
 }
 
 // DeleteEmailTemplate is the resolver for the deleteEmailTemplate field.
@@ -40,7 +40,7 @@ func (r *queryResolver) FindOneEmailTemplateByID(ctx context.Context, id int) (*
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.EmailTemplateToGraphQL(template), nil
+	return mapper.EmailTemplateToGraphQL(template), nil
 }
 
 // FindManyEmailTemplates is the resolver for the findManyEmailTemplates field.
@@ -54,6 +54,6 @@ func (r *queryResolver) FindManyEmailTemplates(ctx context.Context, page model.P
 		Total: int(total),
 		Size:  page.Size,
 		Page:  page.Page,
-		List:  fnMapper.EmailTemplatesToGraphQL(emailTemplates),
+		List:  mapper.EmailTemplatesToGraphQL(emailTemplates),
 	}, nil
 }

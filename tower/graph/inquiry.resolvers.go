@@ -8,7 +8,7 @@ package graph
 import (
 	"context"
 	"tower/graph/model"
-	"tower/pkg/fnMapper"
+	"tower/mapper"
 )
 
 // CreateInquiry is the resolver for the createInquiry field.
@@ -17,7 +17,7 @@ func (r *mutationResolver) CreateInquiry(ctx context.Context, input model.Create
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.InquiryToGraphQL(inquiry), nil
+	return mapper.InquiryToGraphQL(inquiry), nil
 }
 
 // ModifyInquiry is the resolver for the modifyInquiry field.
@@ -26,7 +26,7 @@ func (r *mutationResolver) ModifyInquiry(ctx context.Context, id int, input mode
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.InquiryToGraphQL(inquiry), nil
+	return mapper.InquiryToGraphQL(inquiry), nil
 }
 
 // DeleteInquiry is the resolver for the deleteInquiry field.
@@ -44,7 +44,7 @@ func (r *mutationResolver) AnswerInquiry(ctx context.Context, id int, input mode
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.InquiryToGraphQL(inquiry), nil
+	return mapper.InquiryToGraphQL(inquiry), nil
 }
 
 // FindOneInquiryByID is the resolver for the findOneInquiryById field.
@@ -53,7 +53,7 @@ func (r *queryResolver) FindOneInquiryByID(ctx context.Context, id int, password
 	if err != nil {
 		return nil, err
 	}
-	return fnMapper.InquiryToGraphQL(inquiry), nil
+	return mapper.InquiryToGraphQL(inquiry), nil
 }
 
 // FindManyPublicInquiries is the resolver for the findManyPublicInquiries field.
@@ -67,7 +67,7 @@ func (r *queryResolver) FindManyPublicInquiries(ctx context.Context, page model.
 		Total: int(total),
 		Size:  page.Size,
 		Page:  page.Page,
-		List:  fnMapper.InquiriesToPublicGraphQL(inquiries),
+		List:  mapper.InquiriesToPublicGraphQL(inquiries),
 	}, nil
 }
 
@@ -82,7 +82,7 @@ func (r *queryResolver) FindManyMyInquiries(ctx context.Context, page model.Page
 		Total: int(total),
 		Size:  page.Size,
 		Page:  page.Page,
-		List:  fnMapper.InquiriesToGraphQL(inquiries),
+		List:  mapper.InquiriesToGraphQL(inquiries),
 	}, nil
 }
 
@@ -97,6 +97,6 @@ func (r *queryResolver) FindManyInquiriesForAdmin(ctx context.Context, page mode
 		Total: int(total),
 		Size:  page.Size,
 		Page:  page.Page,
-		List:  fnMapper.InquiriesToGraphQL(inquiries),
+		List:  mapper.InquiriesToGraphQL(inquiries),
 	}, nil
 }

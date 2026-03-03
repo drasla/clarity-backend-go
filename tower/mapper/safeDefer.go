@@ -1,4 +1,4 @@
-package fnMapper
+package mapper
 
 func safeDefer(s *string) string {
 	if s == nil {

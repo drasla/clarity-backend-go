@@ -43,6 +43,10 @@ func NewForbidden(msg string) *AppError {
 	return &AppError{UserMessage: msg, Code: http.StatusForbidden, Action: ActionReturn}
 }
 
+func NewConflict(msg string) *AppError {
+	return &AppError{UserMessage: msg, Code: http.StatusConflict, Action: ActionReturn}
+}
+
 func NewNotFound(msg string) *AppError {
 	return &AppError{UserMessage: msg, Code: http.StatusNotFound, Action: ActionReturn}
 }
