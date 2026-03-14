@@ -26,7 +26,6 @@ input CreateEmailTemplateInput {
     subject: String!
     html: String!
     design: String!
-    variables: String
     description: String
 }
 
@@ -35,7 +34,6 @@ input ModifyEmailTemplateInput {
     subject: String
     html: String
     design: String
-    variables: String
     description: String
 }
 
@@ -47,5 +45,4 @@ extend type Query {
 extend type Mutation {
     createEmailTemplate(input: CreateEmailTemplateInput!): EmailTemplate! @admin
     modifyEmailTemplate(id: Int!, input: ModifyEmailTemplateInput!): EmailTemplate! @admin
-    deleteEmailTemplate(id: Int!): Boolean! @admin
 }

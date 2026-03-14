@@ -29,11 +29,6 @@ func (r *mutationResolver) ModifyEmailTemplate(ctx context.Context, id int, inpu
 	return mapper.EmailTemplateToGraphQL(template), nil
 }
 
-// DeleteEmailTemplate is the resolver for the deleteEmailTemplate field.
-func (r *mutationResolver) DeleteEmailTemplate(ctx context.Context, id int) (bool, error) {
-	return r.EmailTemplateService.Delete(ctx, id)
-}
-
 // FindOneEmailTemplateByID is the resolver for the findOneEmailTemplateById field.
 func (r *queryResolver) FindOneEmailTemplateByID(ctx context.Context, id int) (*model.EmailTemplate, error) {
 	template, err := r.EmailTemplateService.FindById(ctx, id)
@@ -57,3 +52,15 @@ func (r *queryResolver) FindManyEmailTemplates(ctx context.Context, page model.P
 		List:  mapper.EmailTemplatesToGraphQL(emailTemplates),
 	}, nil
 }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) DeleteEmailTemplate(ctx context.Context, id int) (bool, error) {
+	return r.EmailTemplateService.Delete(ctx, id)
+}
+*/

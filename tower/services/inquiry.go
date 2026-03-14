@@ -32,6 +32,7 @@ type InquiryService interface {
 type TelegramOptions struct {
 	TelegramBotToken string
 	TelegramChatID   string
+	ReplyTmplCode    string
 }
 
 type inquiryService struct {
@@ -232,9 +233,10 @@ func (s *inquiryService) Answer(ctx context.Context, id int, input model.AnswerI
 
 		bgCtx := context.Background()
 
-		tmpl, err := s.templateRepo.FindByCode(bgCtx, "INQUIRY_REPLY")
+		tmplCode := s.opts.ReplyTmplCode
+		tmpl, err := s.templateRepo.FindByCode(bgCtx, tmplCode)
 		if err != nil {
-			log.Printf("[이메일 발송 실패] 템플릿(INQUIRY_REPLY) 조회 오류: %v\n", err)
+			log.Printf("[이메일 발송 실패] 템플릿(%s) 조회 오류: %v\n", tmplCode, err)
 			return
 		}
 

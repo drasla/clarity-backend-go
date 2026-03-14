@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"tower/model/maindb"
 	"tower/pkg/fnCrypto"
 	"tower/pkg/fnError"
 	"tower/pkg/fnJwt"
+	"tower/pkg/fnMailer"
 	"tower/pkg/fnMiddleware"
 	"tower/repository"
 )
@@ -42,19 +44,27 @@ type AuthService interface {
 	Withdraw(ctx context.Context, userID uint) error
 }
 
+type AuthOptions struct {
+	JwtSecret       string
+	WelcomeTmplCode string // 환영 메일 템플릿 코드
+}
+
 type authService struct {
 	userRepo            repository.UserRepository
 	sessionRepo         repository.SessionRepository
+	templateRepo        repository.EmailTemplateRepository
 	verificationService VerificationService
-	jwtSecret           string
+	opts                AuthOptions
 }
 
-func NewAuthService(u repository.UserRepository, s repository.SessionRepository, v VerificationService, jwtSecret string) AuthService {
+func NewAuthService(u repository.UserRepository, s repository.SessionRepository, v VerificationService, t repository.EmailTemplateRepository,
+	opts AuthOptions) AuthService {
 	return &authService{
 		userRepo:            u,
 		sessionRepo:         s,
+		templateRepo:        t,
 		verificationService: v,
-		jwtSecret:           jwtSecret,
+		opts:                opts,
 	}
 }
 
@@ -111,6 +121,30 @@ func (s *authService) Register(ctx context.Context, input RegisterInput) (*maind
 		return nil, err
 	}
 
+	go func(u *maindb.User) {
+		if u.Email == "" || !u.AgreeEmail || s.opts.WelcomeTmplCode == "" {
+			return
+		}
+
+		bgCtx := context.Background()
+		tmplCode := s.opts.WelcomeTmplCode
+
+		tmpl, err := s.templateRepo.FindByCode(bgCtx, tmplCode)
+		if err != nil {
+			log.Printf("[이메일 발송 실패] 환영 메일 템플릿(%s) 조회 오류: %v\n", tmplCode, err)
+			return
+		}
+
+		templateContext := map[string]any{
+			"User": u,
+		}
+
+		subject, _ := fnMailer.CompileTemplate(tmpl.Subject, templateContext)
+		htmlBody, _ := fnMailer.CompileTemplate(tmpl.HTML, templateContext)
+
+		_ = fnMailer.Send(tmplCode, u.Email, subject, htmlBody)
+	}(user)
+
 	return user, nil
 }
 
@@ -134,7 +168,7 @@ func (s *authService) Login(ctx context.Context, username, password string) (str
 		return "", "", fnError.NewUnauthorized("아이디 또는 비밀번호가 일치하지 않습니다.")
 	}
 
-	accessToken, err := fnJwt.GenerateAccessToken(user.ID, string(user.Role), s.jwtSecret)
+	accessToken, err := fnJwt.GenerateAccessToken(user.ID, string(user.Role), s.opts.JwtSecret)
 	if err != nil {
 		return "", "", err
 	}
@@ -191,7 +225,7 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 		return "", "", errors.New("user is not active")
 	}
 
-	newAccessToken, _ := fnJwt.GenerateAccessToken(storedToken.UserID, string(storedToken.User.Role), s.jwtSecret)
+	newAccessToken, _ := fnJwt.GenerateAccessToken(storedToken.UserID, string(storedToken.User.Role), s.opts.JwtSecret)
 	newRefreshToken, _ := fnJwt.GenerateRefreshToken()
 
 	_ = s.sessionRepo.Revoke(ctx, refreshToken)

@@ -28,6 +28,10 @@ func newContainer(db *ProjectDB) *ServiceContainer {
 		APIKey: App.Mailgun.APIKey,
 		Sender: App.Mailgun.Sender,
 	}, db.MainDB)
+	var systemEmailTemplateCodes []string
+	for _, sysTmpl := range EssentialEmailTemplates {
+		systemEmailTemplateCodes = append(systemEmailTemplateCodes, sysTmpl.Code)
+	}
 
 	userRepo := repository.NewUserRepository(db.MainDB)
 	sessionRepo := repository.NewSessionRepository(db.MainDB)
@@ -36,14 +40,20 @@ func newContainer(db *ProjectDB) *ServiceContainer {
 	emailTemplateRepo := repository.NewEmailTemplateRepository(db.MainDB)
 
 	verificationService := service.NewVerificationService(verificationRepo)
-	authService := service.NewAuthService(userRepo, sessionRepo, verificationService, App.Echo.JwtSecret)
+
+	authOpts := service.AuthOptions{
+		JwtSecret:       App.Echo.JwtSecret,
+		WelcomeTmplCode: string(TplWelcomeUser), // config/email_templates.go 에 정의된 상수 사용
+	}
+	authService := service.NewAuthService(userRepo, sessionRepo, verificationService, emailTemplateRepo, authOpts)
 	userService := service.NewUserService(userRepo)
 
 	inquiryService := service.NewInquiryService(inquiryRepo, emailTemplateRepo, service.TelegramOptions{
 		TelegramBotToken: App.Telegram.BotToken,
 		TelegramChatID:   App.Telegram.ChatID,
+		ReplyTmplCode:    string(TplInquiryReply),
 	})
-	emailTemplateService := service.NewEmailTemplateService(emailTemplateRepo)
+	emailTemplateService := service.NewEmailTemplateService(emailTemplateRepo, systemEmailTemplateCodes)
 
 	fileService, err := service.NewS3Service(service.S3Options{
 		Domain:     App.S3.Domain,

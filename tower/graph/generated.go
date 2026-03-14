@@ -128,7 +128,6 @@ type ComplexityRoot struct {
 		ConfirmVerification func(childComplexity int, target string, typeArg model.VerificationType, code string) int
 		CreateEmailTemplate func(childComplexity int, input model.CreateEmailTemplateInput) int
 		CreateInquiry       func(childComplexity int, input model.CreateInquiryInput) int
-		DeleteEmailTemplate func(childComplexity int, id int) int
 		DeleteInquiry       func(childComplexity int, id int, password *string) int
 		Empty               func(childComplexity int) int
 		Login               func(childComplexity int, username string, password string) int
@@ -197,7 +196,6 @@ type MutationResolver interface {
 	Withdraw(ctx context.Context) (bool, error)
 	CreateEmailTemplate(ctx context.Context, input model.CreateEmailTemplateInput) (*model.EmailTemplate, error)
 	ModifyEmailTemplate(ctx context.Context, id int, input model.ModifyEmailTemplateInput) (*model.EmailTemplate, error)
-	DeleteEmailTemplate(ctx context.Context, id int) (bool, error)
 	UploadFile(ctx context.Context, file graphql.Upload, directory *string) (*model.FileInfo, error)
 	CreateInquiry(ctx context.Context, input model.CreateInquiryInput) (*model.Inquiry, error)
 	ModifyInquiry(ctx context.Context, id int, input model.ModifyInquiryInput, password *string) (*model.Inquiry, error)
@@ -608,17 +606,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateInquiry(childComplexity, args["input"].(model.CreateInquiryInput)), true
-	case "Mutation.deleteEmailTemplate":
-		if e.complexity.Mutation.DeleteEmailTemplate == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteEmailTemplate_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteEmailTemplate(childComplexity, args["id"].(int)), true
 	case "Mutation.deleteInquiry":
 		if e.complexity.Mutation.DeleteInquiry == nil {
 			break
@@ -1188,17 +1175,6 @@ func (ec *executionContext) field_Mutation_createInquiry_args(ctx context.Contex
 		return nil, err
 	}
 	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteEmailTemplate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNInt2int)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
 	return args, nil
 }
 
@@ -3544,60 +3520,6 @@ func (ec *executionContext) fieldContext_Mutation_modifyEmailTemplate(ctx contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_modifyEmailTemplate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteEmailTemplate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_deleteEmailTemplate,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().DeleteEmailTemplate(ctx, fc.Args["id"].(int))
-		},
-		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
-			directive0 := next
-
-			directive1 := func(ctx context.Context) (any, error) {
-				if ec.directives.Admin == nil {
-					var zeroVal bool
-					return zeroVal, errors.New("directive admin is not implemented")
-				}
-				return ec.directives.Admin(ctx, nil, directive0)
-			}
-
-			next = directive1
-			return next
-		},
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteEmailTemplate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteEmailTemplate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7170,7 +7092,7 @@ func (ec *executionContext) unmarshalInputCreateEmailTemplateInput(ctx context.C
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"templateCode", "subject", "html", "design", "variables", "description"}
+	fieldsInOrder := [...]string{"templateCode", "subject", "html", "design", "description"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7205,13 +7127,6 @@ func (ec *executionContext) unmarshalInputCreateEmailTemplateInput(ctx context.C
 				return it, err
 			}
 			it.Design = data
-		case "variables":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variables"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Variables = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -7438,7 +7353,7 @@ func (ec *executionContext) unmarshalInputModifyEmailTemplateInput(ctx context.C
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"templateCode", "subject", "html", "design", "variables", "description"}
+	fieldsInOrder := [...]string{"templateCode", "subject", "html", "design", "description"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7473,13 +7388,6 @@ func (ec *executionContext) unmarshalInputModifyEmailTemplateInput(ctx context.C
 				return it, err
 			}
 			it.Design = data
-		case "variables":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variables"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Variables = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -8557,13 +8465,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "modifyEmailTemplate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_modifyEmailTemplate(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "deleteEmailTemplate":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteEmailTemplate(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

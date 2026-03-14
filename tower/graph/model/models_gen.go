@@ -47,7 +47,6 @@ type CreateEmailTemplateInput struct {
 	Subject      string  `json:"subject"`
 	HTML         string  `json:"html"`
 	Design       string  `json:"design"`
-	Variables    *string `json:"variables,omitempty"`
 	Description  *string `json:"description,omitempty"`
 }
 
@@ -147,7 +146,6 @@ type ModifyEmailTemplateInput struct {
 	Subject      *string `json:"subject,omitempty"`
 	HTML         *string `json:"html,omitempty"`
 	Design       *string `json:"design,omitempty"`
-	Variables    *string `json:"variables,omitempty"`
 	Description  *string `json:"description,omitempty"`
 }
 

@@ -7,6 +7,7 @@ import (
 	"tower/graph/model"
 	"tower/model/maindb"
 	"tower/pkg/fnError"
+	"tower/pkg/fnMailer"
 	"tower/repository"
 
 	"gorm.io/gorm"
@@ -21,14 +22,27 @@ type EmailTemplateService interface {
 }
 
 type emailTemplateService struct {
-	repo repository.EmailTemplateRepository
+	repo            repository.EmailTemplateRepository
+	systemTmplCodes map[string]bool
 }
 
-func NewEmailTemplateService(repo repository.EmailTemplateRepository) EmailTemplateService {
-	return &emailTemplateService{repo: repo}
+func NewEmailTemplateService(repo repository.EmailTemplateRepository, systemCodes []string) EmailTemplateService {
+	codesMap := make(map[string]bool)
+	for _, code := range systemCodes {
+		codesMap[code] = true
+	}
+
+	return &emailTemplateService{
+		repo:            repo,
+		systemTmplCodes: codesMap,
+	}
 }
 
 func (s *emailTemplateService) Create(ctx context.Context, input model.CreateEmailTemplateInput) (*maindb.EmailTemplate, error) {
+	if s.isSystemTemplate(input.TemplateCode) {
+		return nil, fnError.NewBadRequest("시스템 템플릿 코드는 사용할 수 없습니다.")
+	}
+
 	existing, err := s.repo.FindByCode(ctx, input.TemplateCode)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fnError.NewInternalError(err, "템플릿 코드 중복 검사 중 오류가 발생했습니다.")
@@ -44,9 +58,8 @@ func (s *emailTemplateService) Create(ctx context.Context, input model.CreateEma
 		Design:       input.Design,
 	}
 
-	if input.Variables != nil {
-		template.Variables = *input.Variables
-	}
+	template.Variables = fnMailer.AllowedCustomVariables
+
 	if input.Description != nil {
 		template.Description = *input.Description
 	}
@@ -82,7 +95,15 @@ func (s *emailTemplateService) Update(ctx context.Context, id int, input model.M
 		return nil, fnError.NewNotFound("수정할 템플릿을 찾을 수 없습니다.")
 	}
 
-	// 헬퍼 함수로 부분 업데이트
+	isSystem := s.isSystemTemplate(template.TemplateCode)
+
+	if isSystem && input.TemplateCode != nil && *input.TemplateCode != template.TemplateCode {
+		return nil, fnError.NewForbidden("시스템 템플릿의 코드는 변경할 수 없습니다.")
+	}
+	if !isSystem && input.TemplateCode != nil && s.isSystemTemplate(*input.TemplateCode) {
+		return nil, fnError.NewBadRequest("시스템 예약어로는 코드를 변경할 수 없습니다.")
+	}
+
 	mapModifyInputToTemplate(template, input)
 
 	if err := s.repo.Update(ctx, template); err != nil {
@@ -120,10 +141,11 @@ func mapModifyInputToTemplate(template *maindb.EmailTemplate, input model.Modify
 	if input.Design != nil {
 		template.Design = *input.Design
 	}
-	if input.Variables != nil {
-		template.Variables = *input.Variables
-	}
 	if input.Description != nil {
 		template.Description = *input.Description
 	}
+}
+
+func (s *emailTemplateService) isSystemTemplate(code string) bool {
+	return s.systemTmplCodes[code]
 }

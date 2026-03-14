@@ -3,8 +3,8 @@ package fnMailer
 import (
 	"bytes"
 	"context"
-	"html/template"
 	"log"
+	"text/template"
 	"time"
 	"tower/model/maindb"
 
